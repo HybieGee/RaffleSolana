@@ -1,12 +1,13 @@
 # $RAFFLE - Solana Raffle System
 
-A livestream-friendly Solana raffle site that automatically collects Pump.fun creator fees every 20 minutes, picks 3 winners from token holders, and distributes 95% of collected fees evenly among them (5% goes to marketing wallet).
+A livestream-friendly Solana raffle site that processes claimed Pump.fun creator fees every 20 minutes, picks 3 winners from token holders, and distributes 95% of claimed fees evenly among them (5% goes to marketing wallet).
 
 ## Features
 
-- **Automatic Fee Collection**: Pulls creator fees from Pump.fun wallet every 20 minutes
+- **Claim Processing**: Detects when you claim fees from Pump.fun to your wallet
+- **Automatic Raffles**: Runs every 20 minutes if claimed fees are available
 - **Fair Weighted Selection**: Uses sqrt or log algorithms for balanced odds
-- **3 Winners Per Draw**: Equal distribution of 95% of collected fees
+- **3 Winners Per Draw**: Equal distribution of 95% of claimed fees
 - **Marketing Allocation**: 5% automatically sent to marketing wallet
 - **Real-time Updates**: Server-Sent Events (SSE) for live streaming
 - **Stream-Optimized UI**: Responsive design for 1920x1080 capture
@@ -52,7 +53,7 @@ cp .env.example .env.local
 4. Configure your `.env.local` with:
    - `SOLANA_RPC_URL`: Your Solana RPC endpoint
    - `TOKEN_MINT_ADDRESS`: SPL token address for holder weighting
-   - `PUMP_FUN_CREATOR_WALLET`: Wallet that receives Pump.fun fees
+   - `CLAIM_RECEIVER_WALLET`: Your wallet where you claim fees TO from Pump.fun
    - `MARKETING_WALLET`: Wallet to receive 5% for marketing
    - `PAYOUT_SIGNER_SECRET`: Base64 encoded secret key for payouts
    - `NETWORK`: mainnet-beta or devnet
@@ -171,17 +172,26 @@ wrangler d1 execute raffle-db --command="SELECT * FROM winners ORDER BY id DESC 
 
 ## Fee Collection Flow
 
-The system automatically collects fees from Pump.fun:
+The system processes fees you claim from Pump.fun:
 
-1. **Pump.fun Integration**: Monitors the `PUMP_FUN_CREATOR_WALLET` for incoming creator fees
-2. **Automatic Collection**: Every 20 minutes, the system:
-   - Queries recent transactions to the creator wallet
-   - Identifies Pump.fun fee deposits
-   - Calculates total fees collected in the period
-3. **Distribution**:
-   - 95% split evenly among 3 winners
+1. **Manual Claiming**: You claim creator fees on Pump.fun website to your wallet
+2. **Automatic Detection**: Every 20 minutes, the system:
+   - Checks `CLAIM_RECEIVER_WALLET` for new claimed fee deposits
+   - Identifies transactions from Pump.fun fee claims
+   - Tracks which claims have been processed
+3. **Raffle Execution** (if fees available):
+   - Selects 3 winners from token holders
+   - 95% split evenly among winners
    - 5% sent to `MARKETING_WALLET`
-4. **Tracking**: All collections and payouts are recorded in D1 database
+4. **State Tracking**:
+   - Remembers last processed claim to avoid duplicates
+   - All raffles and payouts recorded in D1 database
+
+### Important: Claiming Process
+- **You must manually claim fees** on Pump.fun before each raffle
+- The system detects claimed fees automatically
+- If no fees are claimed, the raffle is skipped
+- Claim fees regularly to keep raffles running!
 
 ## Fairness
 

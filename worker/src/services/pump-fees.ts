@@ -11,60 +11,80 @@ export interface FeeCollection {
   endTime: number
 }
 
-export async function collectPumpFunFees(env: Env): Promise<number> {
+export async function collectClaimedFees(env: Env): Promise<number> {
   const connection = new Connection(env.SOLANA_RPC_URL, 'confirmed')
 
   try {
     const now = Date.now()
-    const twentyMinutesAgo = now - (20 * 60 * 1000)
 
-    const lastCollectionTime = await env.KV_RAFFLE.get('last_fee_collection')
-    const fromTime = lastCollectionTime ? parseInt(lastCollectionTime) : twentyMinutesAgo
+    // Get the last processed claim transaction
+    const lastProcessedClaim = await env.KV_RAFFLE.get('last_processed_claim_sig')
+    const lastClaimTime = await env.KV_RAFFLE.get('last_claim_time')
+    const fromTime = lastClaimTime ? parseInt(lastClaimTime) : now - (24 * 60 * 60 * 1000) // Look back 24 hours initially
 
-    const creatorPubkey = new PublicKey(env.PUMP_FUN_CREATOR_WALLET || env.CREATOR_WALLET)
+    // This is the wallet where you claim fees TO (your wallet that receives claims)
+    const claimReceiverWallet = new PublicKey(env.CLAIM_RECEIVER_WALLET || env.CREATOR_WALLET)
 
     const signatures = await connection.getSignaturesForAddress(
-      creatorPubkey,
+      claimReceiverWallet,
       { limit: 100 },
       'confirmed'
     )
 
-    let totalFees = 0
-    const processedTxs: string[] = []
+    let totalClaimedFees = 0
+    const processedClaims: string[] = []
+    let latestClaimSig: string | null = null
 
     for (const sigInfo of signatures) {
-      if (sigInfo.blockTime && sigInfo.blockTime * 1000 >= fromTime && sigInfo.blockTime * 1000 <= now) {
+      // Skip if we've already processed this claim
+      if (lastProcessedClaim && sigInfo.signature === lastProcessedClaim) {
+        break
+      }
+
+      if (sigInfo.blockTime && sigInfo.blockTime * 1000 >= fromTime) {
         const tx = await connection.getParsedTransaction(
           sigInfo.signature,
           { maxSupportedTransactionVersion: 0 }
         )
 
-        if (tx && isPumpFunFeeTransaction(tx)) {
-          const feeAmount = extractFeeAmount(tx, env.PUMP_FUN_CREATOR_WALLET || env.CREATOR_WALLET)
-          if (feeAmount > 0) {
-            totalFees += feeAmount
-            processedTxs.push(sigInfo.signature)
+        if (tx && isPumpFunClaim(tx)) {
+          const claimAmount = extractClaimAmount(tx, env.CLAIM_RECEIVER_WALLET || env.CREATOR_WALLET)
+          if (claimAmount > 0) {
+            totalClaimedFees += claimAmount
+            processedClaims.push(sigInfo.signature)
+            if (!latestClaimSig) {
+              latestClaimSig = sigInfo.signature
+            }
           }
         }
       }
     }
 
-    await env.KV_RAFFLE.put('last_fee_collection', now.toString())
+    // Only update if we found new claims
+    if (latestClaimSig) {
+      await env.KV_RAFFLE.put('last_processed_claim_sig', latestClaimSig)
+      await env.KV_RAFFLE.put('last_claim_time', now.toString())
+    }
 
-    await env.KV_RAFFLE.put(
-      `fee_collection_${now}`,
-      JSON.stringify({
-        totalFees,
-        transactions: processedTxs,
-        startTime: fromTime,
-        endTime: now
-      }),
-      { expirationTtl: 86400 * 7 }
-    )
+    // Store claim collection record
+    if (totalClaimedFees > 0) {
+      await env.KV_RAFFLE.put(
+        `claim_collection_${now}`,
+        JSON.stringify({
+          totalFees: totalClaimedFees,
+          transactions: processedClaims,
+          startTime: fromTime,
+          endTime: now
+        }),
+        { expirationTtl: 86400 * 7 }
+      )
 
-    console.log(`Collected ${totalFees} lamports in fees from ${processedTxs.length} transactions`)
+      console.log(`Collected ${totalClaimedFees} lamports from ${processedClaims.length} claim transactions`)
+    } else {
+      console.log('No new claimed fees found. Remember to claim fees on Pump.fun!')
+    }
 
-    return totalFees
+    return totalClaimedFees
   } catch (error) {
     console.error('Error collecting Pump.fun fees:', error)
 
@@ -74,22 +94,30 @@ export async function collectPumpFunFees(env: Env): Promise<number> {
   }
 }
 
-function isPumpFunFeeTransaction(tx: ParsedTransactionWithMeta): boolean {
+function isPumpFunClaim(tx: ParsedTransactionWithMeta): boolean {
   if (!tx.transaction.message.accountKeys) return false
 
-  return tx.transaction.message.accountKeys.some(
+  // Check if transaction involves Pump.fun program
+  const hasPumpProgram = tx.transaction.message.accountKeys.some(
     key => key.pubkey.toString() === PUMP_FUN_PROGRAM
   )
+
+  // Check if it's from the fee account (claims come FROM this account)
+  const fromFeeAccount = tx.transaction.message.accountKeys.some(
+    key => key.pubkey.toString() === PUMP_FUN_FEE_ACCOUNT
+  )
+
+  return hasPumpProgram || fromFeeAccount
 }
 
-function extractFeeAmount(
+function extractClaimAmount(
   tx: ParsedTransactionWithMeta,
-  creatorWallet: string
+  claimWallet: string
 ): number {
   if (!tx.meta || !tx.meta.postBalances || !tx.meta.preBalances) return 0
 
   const accountIndex = tx.transaction.message.accountKeys.findIndex(
-    key => key.pubkey.toString() === creatorWallet
+    key => key.pubkey.toString() === claimWallet
   )
 
   if (accountIndex === -1) return 0

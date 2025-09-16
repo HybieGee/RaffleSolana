@@ -3,7 +3,7 @@ import { getTokenHolders } from './solana'
 import { calculateWeights, selectWinners } from './weights'
 import { sendPayouts } from './payouts'
 import { saveDrawResult, updateDrawStatus } from './database'
-import { collectPumpFunFees } from './pump-fees'
+import { collectClaimedFees } from './pump-fees'
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -30,9 +30,10 @@ export async function runRaffle(env: Env): Promise<void> {
     const drawId = generateUUID()
     const startedAt = new Date().toISOString()
 
-    const creatorFees = await collectPumpFunFees(env)
-    if (creatorFees < 1000000) {
-      console.log('Insufficient fees for raffle:', creatorFees)
+    const claimedFees = await collectClaimedFees(env)
+    if (claimedFees < 1000000) {
+      console.log('Insufficient claimed fees for raffle:', claimedFees)
+      console.log('Please claim your fees on Pump.fun before the next draw!')
       await env.KV_RAFFLE.delete(lockKey)
       return
     }
@@ -54,9 +55,9 @@ export async function runRaffle(env: Env): Promise<void> {
 
     await updateDrawPhase(env, 'selected_winners', { winners })
 
-    const payoutPool = Math.floor(creatorFees * 0.95)
+    const payoutPool = Math.floor(claimedFees * 0.95)
     const payoutPerWinner = Math.floor(payoutPool / 3)
-    const marketingShare = creatorFees - payoutPool
+    const marketingShare = claimedFees - payoutPool
 
     const payoutResults = await sendPayouts(env, winners, payoutPerWinner, marketingShare)
 
@@ -66,7 +67,7 @@ export async function runRaffle(env: Env): Promise<void> {
       drawId,
       startedAt,
       endedAt: new Date().toISOString(),
-      feeTotalLamports: creatorFees,
+      feeTotalLamports: claimedFees,
       oddsMode: env.ODDS_MODE as 'sqrt' | 'log',
       maxWeightRatio: parseFloat(env.MAX_WEIGHT_RATIO),
       status: 'completed',
@@ -82,7 +83,7 @@ export async function runRaffle(env: Env): Promise<void> {
     await saveDrawResult(env, drawResult)
 
     await env.KV_RAFFLE.put('last_draw_time', Date.now().toString())
-    await env.KV_RAFFLE.put('total_paid', (await getTotalPaid(env) + creatorFees).toString())
+    await env.KV_RAFFLE.put('total_paid', (await getTotalPaid(env) + claimedFees).toString())
 
     const currentLock = await env.KV_RAFFLE.get(lockKey)
     if (currentLock === lockValue) {

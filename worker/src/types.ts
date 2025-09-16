@@ -4,7 +4,7 @@ export interface Env {
   SOLANA_RPC_URL: string
   TOKEN_MINT_ADDRESS: string
   CREATOR_WALLET: string
-  PUMP_FUN_CREATOR_WALLET?: string
+  CLAIM_RECEIVER_WALLET?: string  // Where you claim fees TO from Pump.fun
   MARKETING_WALLET?: string
   PAYOUT_SIGNER_SECRET: string
   NETWORK: 'mainnet-beta' | 'devnet'
