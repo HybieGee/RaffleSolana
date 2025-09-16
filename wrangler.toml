@@ -1,0 +1,26 @@
+name = "raffle-worker"
+main = "worker/src/index.ts"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+[env.production]
+vars = { NETWORK = "mainnet-beta", ODDS_MODE = "sqrt", MAX_WEIGHT_RATIO = "5", MIN_BALANCE_FOR_ELIGIBILITY = "0" }
+
+[[kv_namespaces]]
+binding = "KV_RAFFLE"
+id = "raffle_kv"
+
+[[d1_databases]]
+binding = "D1_RAFFLE"
+database_name = "raffle-db"
+database_id = "raffle-db-id"
+
+[triggers]
+crons = ["*/20 * * * *"]
+
+[build]
+command = "npm run build:worker"
+
+[build.upload]
+format = "modules"
+main = "./worker/dist/index.js"
