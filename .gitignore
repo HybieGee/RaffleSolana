@@ -26,6 +26,11 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.dev.vars
+
+# Keypair files (never commit these!)
+*keypair*.json
+*.key
 
 # Vercel
 .vercel

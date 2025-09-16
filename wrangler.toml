@@ -8,19 +8,13 @@ vars = { NETWORK = "mainnet-beta", ODDS_MODE = "sqrt", MAX_WEIGHT_RATIO = "5", M
 
 [[kv_namespaces]]
 binding = "KV_RAFFLE"
-id = "raffle_kv"
+id = "adb78fd83f524dd283a2db8868795ac1"
 
 [[d1_databases]]
 binding = "D1_RAFFLE"
 database_name = "raffle-db"
-database_id = "raffle-db-id"
+database_id = "a0b797f9-ee8b-4302-bbc2-7af64cb84e2a"
 
 [triggers]
 crons = ["*/20 * * * *"]
 
-[build]
-command = "npm run build:worker"
-
-[build.upload]
-format = "modules"
-main = "./worker/dist/index.js"
