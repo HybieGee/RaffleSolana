@@ -1,13 +1,15 @@
 # $RAFFLE - Solana Raffle System
 
-A livestream-friendly Solana raffle site that processes claimed Pump.fun creator fees every 20 minutes, picks 3 winners from token holders, and distributes 95% of claimed fees evenly among them (5% goes to marketing wallet).
+A livestream-friendly Solana raffle site with a fee pool system. Claim your Pump.fun creator fees anytime - the system accumulates them and runs raffles every 20 minutes when enough fees are available, distributing 95% to 3 winners and 5% to marketing.
 
 ## Features
 
-- **Claim Processing**: Detects when you claim fees from Pump.fun to your wallet
-- **Automatic Raffles**: Runs every 20 minutes if claimed fees are available
+- **Fee Pool System**: Accumulates claimed fees for multiple raffles
+- **Flexible Claiming**: Claim fees from Pump.fun whenever convenient
+- **Automatic Raffles**: Runs every 20 minutes when pool has enough funds
+- **Fixed Raffle Amount**: Each raffle uses 0.1 SOL (configurable)
 - **Fair Weighted Selection**: Uses sqrt or log algorithms for balanced odds
-- **3 Winners Per Draw**: Equal distribution of 95% of claimed fees
+- **3 Winners Per Draw**: Equal distribution of 95% of raffle amount
 - **Marketing Allocation**: 5% automatically sent to marketing wallet
 - **Real-time Updates**: Server-Sent Events (SSE) for live streaming
 - **Stream-Optimized UI**: Responsive design for 1920x1080 capture
@@ -170,28 +172,38 @@ wrangler d1 execute raffle-db --command="SELECT * FROM draws ORDER BY started_at
 wrangler d1 execute raffle-db --command="SELECT * FROM winners ORDER BY id DESC LIMIT 10"
 ```
 
-## Fee Collection Flow
+## Fee Pool System
 
-The system processes fees you claim from Pump.fun:
+The system uses a smart fee pool that accumulates your Pump.fun claims:
 
-1. **Manual Claiming**: You claim creator fees on Pump.fun website to your wallet
-2. **Automatic Detection**: Every 20 minutes, the system:
-   - Checks `CLAIM_RECEIVER_WALLET` for new claimed fee deposits
-   - Identifies transactions from Pump.fun fee claims
-   - Tracks which claims have been processed
-3. **Raffle Execution** (if fees available):
-   - Selects 3 winners from token holders
-   - 95% split evenly among winners
-   - 5% sent to `MARKETING_WALLET`
-4. **State Tracking**:
-   - Remembers last processed claim to avoid duplicates
-   - All raffles and payouts recorded in D1 database
+### How It Works
 
-### Important: Claiming Process
-- **You must manually claim fees** on Pump.fun before each raffle
-- The system detects claimed fees automatically
-- If no fees are claimed, the raffle is skipped
-- Claim fees regularly to keep raffles running!
+1. **Claim Anytime**: Claim creator fees on Pump.fun whenever you want
+2. **Pool Accumulation**: System adds claimed fees to the fee pool
+3. **Automatic Raffles**: Every 20 minutes:
+   - Checks if pool has enough for a raffle (0.1 SOL default)
+   - If yes, runs raffle and deducts from pool
+   - If no, skips and waits for next cycle
+4. **Multiple Raffles**: One claim can fund multiple raffles
+   - Example: Claim 1 SOL → Funds 10 raffles over 3+ hours
+
+### Pool Management
+
+- **Balance Tracking**: Always shows current pool balance
+- **Raffles Available**: Shows how many raffles the pool can fund
+- **No Rush**: Claim when convenient, not before each raffle
+- **Efficient**: Reduces gas costs by batching claims
+
+### Example Flow
+```
+Day 1: Claim 2 SOL from Pump.fun → Pool: 2 SOL
+- Raffle 1 (20 min): Uses 0.1 SOL → Pool: 1.9 SOL ✓
+- Raffle 2 (40 min): Uses 0.1 SOL → Pool: 1.8 SOL ✓
+- ... continues until pool is depleted
+
+Day 3: Claim 5 SOL from Pump.fun → Pool: 5 SOL
+- Funds 50 more raffles!
+```
 
 ## Fairness
 
