@@ -3,11 +3,17 @@ import { getTokenHolders } from './solana'
 import { calculateWeights, selectWinners } from './weights'
 import { sendPayouts } from './payouts'
 import { saveDrawResult, updateDrawStatus } from './database'
-import { v4 as uuidv4 } from 'crypto'
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 export async function runRaffle(env: Env): Promise<void> {
   const lockKey = 'raffle:lock'
-  const lockValue = uuidv4()
+  const lockValue = generateUUID()
 
   try {
     const existingLock = await env.KV_RAFFLE.get(lockKey)
@@ -20,7 +26,7 @@ export async function runRaffle(env: Env): Promise<void> {
 
     await updateDrawPhase(env, 'drawing', {})
 
-    const drawId = uuidv4()
+    const drawId = generateUUID()
     const startedAt = new Date().toISOString()
 
     const creatorFees = await getCreatorFees(env)
