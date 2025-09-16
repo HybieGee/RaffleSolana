@@ -12,7 +12,7 @@ export async function sendPayouts(
   env: Env,
   winners: Holder[],
   amountPerWinner: number,
-  creatorAmount: number
+  marketingAmount: number
 ): Promise<PayoutResult[]> {
   const results: PayoutResult[] = []
 
@@ -50,10 +50,11 @@ export async function sendPayouts(
   }
 
   try {
-    const creatorSignature = await sendSolanaPayment(env, env.CREATOR_WALLET, creatorAmount)
-    console.log(`Creator payout sent: ${creatorSignature}`)
+    const marketingWallet = env.MARKETING_WALLET || env.CREATOR_WALLET
+    const marketingSignature = await sendSolanaPayment(env, marketingWallet, marketingAmount)
+    console.log(`Marketing payout (5%) sent to ${marketingWallet}: ${marketingSignature}`)
   } catch (error) {
-    console.error('Creator payout failed:', error)
+    console.error('Marketing payout failed:', error)
   }
 
   return results

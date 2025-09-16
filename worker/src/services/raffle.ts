@@ -3,6 +3,7 @@ import { getTokenHolders } from './solana'
 import { calculateWeights, selectWinners } from './weights'
 import { sendPayouts } from './payouts'
 import { saveDrawResult, updateDrawStatus } from './database'
+import { collectPumpFunFees } from './pump-fees'
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -29,7 +30,7 @@ export async function runRaffle(env: Env): Promise<void> {
     const drawId = generateUUID()
     const startedAt = new Date().toISOString()
 
-    const creatorFees = await getCreatorFees(env)
+    const creatorFees = await collectPumpFunFees(env)
     if (creatorFees < 1000000) {
       console.log('Insufficient fees for raffle:', creatorFees)
       await env.KV_RAFFLE.delete(lockKey)
@@ -55,9 +56,9 @@ export async function runRaffle(env: Env): Promise<void> {
 
     const payoutPool = Math.floor(creatorFees * 0.95)
     const payoutPerWinner = Math.floor(payoutPool / 3)
-    const creatorShare = creatorFees - payoutPool
+    const marketingShare = creatorFees - payoutPool
 
-    const payoutResults = await sendPayouts(env, winners, payoutPerWinner, creatorShare)
+    const payoutResults = await sendPayouts(env, winners, payoutPerWinner, marketingShare)
 
     await updateDrawPhase(env, 'payouts_sent', { payouts: payoutResults })
 
@@ -120,10 +121,6 @@ export async function retryPayout(env: Env, drawId: string): Promise<void> {
   }
 }
 
-async function getCreatorFees(env: Env): Promise<number> {
-  const mockFees = 100000000
-  return mockFees
-}
 
 async function getTotalPaid(env: Env): Promise<number> {
   const total = await env.KV_RAFFLE.get('total_paid')

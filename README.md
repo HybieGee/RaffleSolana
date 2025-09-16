@@ -1,17 +1,17 @@
 # $RAFFLE - Solana Raffle System
 
-A livestream-friendly Solana raffle site that automatically runs every 20 minutes, picks 3 winners, and splits 95% of creator fees evenly among them.
+A livestream-friendly Solana raffle site that automatically collects Pump.fun creator fees every 20 minutes, picks 3 winners from token holders, and distributes 95% of collected fees evenly among them (5% goes to marketing wallet).
 
 ## Features
 
-- Automatic raffle draws every 20 minutes via Cloudflare Cron Triggers
-- Fair weighted selection using sqrt or log algorithms
-- 3 winners per draw with equal payouts
-- 95% of fees distributed to winners, 5% to creator
-- Real-time updates via Server-Sent Events (SSE)
-- Responsive, stream-friendly UI optimized for 1920x1080
-- Fully automated on-chain payouts
-- Immutable results stored in Cloudflare D1
+- **Automatic Fee Collection**: Pulls creator fees from Pump.fun wallet every 20 minutes
+- **Fair Weighted Selection**: Uses sqrt or log algorithms for balanced odds
+- **3 Winners Per Draw**: Equal distribution of 95% of collected fees
+- **Marketing Allocation**: 5% automatically sent to marketing wallet
+- **Real-time Updates**: Server-Sent Events (SSE) for live streaming
+- **Stream-Optimized UI**: Responsive design for 1920x1080 capture
+- **Fully Automated**: On-chain payouts with no manual intervention
+- **Immutable Records**: All results stored permanently in Cloudflare D1
 
 ## Tech Stack
 
@@ -51,8 +51,9 @@ cp .env.example .env.local
 
 4. Configure your `.env.local` with:
    - `SOLANA_RPC_URL`: Your Solana RPC endpoint
-   - `TOKEN_MINT_ADDRESS`: SPL token address for weighting
-   - `CREATOR_WALLET`: Wallet to receive 5% creator fee
+   - `TOKEN_MINT_ADDRESS`: SPL token address for holder weighting
+   - `PUMP_FUN_CREATOR_WALLET`: Wallet that receives Pump.fun fees
+   - `MARKETING_WALLET`: Wallet to receive 5% for marketing
    - `PAYOUT_SIGNER_SECRET`: Base64 encoded secret key for payouts
    - `NETWORK`: mainnet-beta or devnet
    - `ADMIN_TOKEN`: Secret token for admin endpoints
@@ -168,15 +169,19 @@ wrangler d1 execute raffle-db --command="SELECT * FROM draws ORDER BY started_at
 wrangler d1 execute raffle-db --command="SELECT * FROM winners ORDER BY id DESC LIMIT 10"
 ```
 
-## Fee Collection
+## Fee Collection Flow
 
-The system expects creator fees to be available for distribution. You need to implement one of these strategies:
+The system automatically collects fees from Pump.fun:
 
-1. **Program Account Balance**: Monitor balance changes in a specific program account
-2. **Transaction Webhooks**: Use Helius/QuickNode webhooks for fee transactions
-3. **Manual Deposits**: Periodically deposit fees to a collection wallet
-
-Update `getCreatorFees()` in `worker/src/services/raffle.ts` with your chosen method.
+1. **Pump.fun Integration**: Monitors the `PUMP_FUN_CREATOR_WALLET` for incoming creator fees
+2. **Automatic Collection**: Every 20 minutes, the system:
+   - Queries recent transactions to the creator wallet
+   - Identifies Pump.fun fee deposits
+   - Calculates total fees collected in the period
+3. **Distribution**:
+   - 95% split evenly among 3 winners
+   - 5% sent to `MARKETING_WALLET`
+4. **Tracking**: All collections and payouts are recorded in D1 database
 
 ## Fairness
 

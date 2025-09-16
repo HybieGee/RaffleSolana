@@ -4,6 +4,8 @@ export interface Env {
   SOLANA_RPC_URL: string
   TOKEN_MINT_ADDRESS: string
   CREATOR_WALLET: string
+  PUMP_FUN_CREATOR_WALLET?: string
+  MARKETING_WALLET?: string
   PAYOUT_SIGNER_SECRET: string
   NETWORK: 'mainnet-beta' | 'devnet'
   ODDS_MODE: 'sqrt' | 'log'
