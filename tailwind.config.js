@@ -19,7 +19,9 @@ module.exports = {
           700: '#15803d',
           800: '#166534',
           900: '#14532d'
-        }
+        },
+        cream: '#E8D4B0',
+        charcoal: '#2B2D30'
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

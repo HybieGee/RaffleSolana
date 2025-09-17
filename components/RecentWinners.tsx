@@ -19,31 +19,31 @@ export default function RecentWinners({ winners }: RecentWinnersProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-xl">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">Recent Winners</h2>
+    <div className="bg-charcoal rounded-2xl p-6 shadow-xl">
+      <h2 className="text-2xl font-bold mb-4 text-cream">Recent Winners</h2>
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {winners.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No winners yet</p>
+          <p className="text-gray-400 text-center py-4">No winners yet</p>
         ) : (
           winners.map((winner) => (
             <div
               key={winner.id}
-              className="border-l-4 border-mint-500 pl-4 py-2 hover:bg-gray-50 transition-colors"
+              className="border-l-4 border-cream pl-4 py-2 hover:bg-gray-800 transition-colors"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="font-mono text-sm">{formatAddress(winner.wallet)}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-mono text-sm text-gray-300">{formatAddress(winner.wallet)}</p>
+                  <p className="text-xs text-gray-400">
                     {formatPercentage(winner.probability)}% chance
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-mint-600">{formatSOL(winner.payoutLamports)} SOL</p>
+                  <p className="font-bold text-cream">{formatSOL(winner.payoutLamports)} SOL</p>
                   <a
                     href={`https://solscan.io/tx/${winner.txSig}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-500 hover:underline"
+                    className="text-xs text-blue-400 hover:underline"
                   >
                     View TX
                   </a>

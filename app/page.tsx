@@ -74,7 +74,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-mint-50 to-mint-100">
+    <div className="min-h-screen bg-cream">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Header totalPaid={status?.totalPaid || 0} />
 
