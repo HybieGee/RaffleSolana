@@ -5,6 +5,36 @@ interface CountdownProps {
 }
 
 export default function Countdown({ nextDrawTime }: CountdownProps) {
+  const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 })
+
+  useEffect(() => {
+    const updateTimer = () => {
+      const now = new Date()
+      const minutes = now.getMinutes()
+      const seconds = now.getSeconds()
+
+      // Calculate time until next :00 or :05 minute mark
+      let nextMinute
+      if (minutes % 5 === 0) {
+        nextMinute = minutes + 5
+      } else {
+        nextMinute = Math.ceil(minutes / 5) * 5
+      }
+
+      if (nextMinute >= 60) nextMinute = 0
+
+      const timeUntilNext = (nextMinute === 0 ? 60 : nextMinute) * 60 - (minutes * 60 + seconds)
+      const mins = Math.floor(timeUntilNext / 60)
+      const secs = timeUntilNext % 60
+
+      setTimeLeft({ minutes: mins, seconds: secs })
+    }
+
+    updateTimer()
+    const interval = setInterval(updateTimer, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="bg-cream rounded-2xl p-6 shadow-xl">
       <h2 className="text-xl font-bold text-center mb-3 text-charcoal">
@@ -12,14 +42,16 @@ export default function Countdown({ nextDrawTime }: CountdownProps) {
       </h2>
       <div className="text-center space-y-4">
         <div className="text-2xl font-bold text-charcoal">
-          Instant Raffle on Claim!
+          Automatic Raffle every 10 minutes!
         </div>
         <div className="text-base text-gray-700">
-          Claim fees on Pump.fun to trigger raffle
+          Automatic fee collection and payouts
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center">
           <div className="animate-pulse bg-red-500 w-4 h-4 rounded-full mr-2"></div>
-          <span className="text-red-600 font-semibold">WATCHING FOR CLAIMS</span>
+          <span className="text-red-600 font-semibold">
+            NEXT RAFFLE: {timeLeft.minutes}:{timeLeft.seconds.toString().padStart(2, '0')}
+          </span>
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ export default function HowItWorks() {
       <ul className="space-y-2 text-sm">
         <li className="flex items-start">
           <span className="text-charcoal mr-2">•</span>
-          <span className="text-gray-700">Automatic raffle every 20 minutes</span>
+          <span className="text-gray-700">Automatic raffle every 10 minutes</span>
         </li>
         <li className="flex items-start">
           <span className="text-charcoal mr-2">•</span>
