@@ -30,8 +30,8 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
   }
 
   return (
-    <div className="bg-cream rounded-2xl p-8 shadow-xl h-full flex flex-col">
-      <h2 className="text-2xl font-bold text-center mb-6 text-charcoal">
+    <div className="bg-cream rounded-2xl p-6 shadow-xl h-full flex flex-col">
+      <h2 className="text-xl font-bold text-center mb-4 text-charcoal">
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
@@ -49,8 +49,8 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
       </div>
 
       {isDrawing && (
-        <div className="text-center mt-4">
-          <p className="text-charcoal font-semibold text-xl animate-pulse">
+        <div className="text-center mt-2">
+          <p className="text-charcoal font-semibold text-lg animate-pulse">
             🎲 Selecting winner {loopCount + 1} of 3...
           </p>
         </div>

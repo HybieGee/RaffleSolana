@@ -1,8 +1,8 @@
 export default function HowItWorks() {
   return (
-    <div className="bg-cream rounded-2xl p-6 shadow-xl">
-      <h2 className="text-2xl font-bold mb-4 text-charcoal">How It Works</h2>
-      <ul className="space-y-3">
+    <div className="bg-cream rounded-2xl p-5 shadow-xl">
+      <h2 className="text-xl font-bold mb-3 text-charcoal">How It Works</h2>
+      <ul className="space-y-2 text-sm">
         <li className="flex items-start">
           <span className="text-charcoal mr-2">•</span>
           <span className="text-gray-700">Automatic raffle every 20 minutes</span>

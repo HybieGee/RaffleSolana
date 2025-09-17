@@ -13,7 +13,7 @@ export default function Header({ totalPaid }: HeaderProps) {
 
   return (
     <header className="text-center">
-      <h1 className="text-6xl font-bold text-cream mb-4">$RAFFLE</h1>
+      <h1 className="text-5xl font-bold text-cream mb-3">$RAFFLE</h1>
       <div className="flex justify-center items-center gap-4 text-sm">
         <div className="bg-cream rounded-lg px-4 py-2 shadow-md">
           <span className="text-gray-700">Total Paid: </span>

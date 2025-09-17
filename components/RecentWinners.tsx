@@ -19,9 +19,9 @@ export default function RecentWinners({ winners }: RecentWinnersProps) {
   }
 
   return (
-    <div className="bg-cream rounded-2xl p-6 shadow-xl">
-      <h2 className="text-2xl font-bold mb-4 text-charcoal">Recent Winners</h2>
-      <div className="space-y-3 max-h-96 overflow-y-auto">
+    <div className="bg-cream rounded-2xl p-5 shadow-xl">
+      <h2 className="text-xl font-bold mb-3 text-charcoal">Recent Winners</h2>
+      <div className="space-y-2 max-h-48 overflow-y-auto">
         {winners.length === 0 ? (
           <p className="text-gray-600 text-center py-4">No winners yet</p>
         ) : (

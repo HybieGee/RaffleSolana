@@ -75,7 +75,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-charcoal">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-4 max-w-7xl">
         <Header totalPaid={status?.totalPaid || 0} />
 
         {claimDetected && (
@@ -97,12 +97,12 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-8 mt-12">
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
           <div>
             <RaffleMachine isDrawing={isDrawing} />
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             <Countdown nextDrawTime={status?.nextDrawTime || Date.now() + 1200000} />
             <RecentWinners winners={winners} />
             <HowItWorks />
