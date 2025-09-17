@@ -35,10 +35,10 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
-      <div className="relative w-full h-80 flex justify-center items-center rounded-xl overflow-hidden bg-cream">
+      <div className="relative w-full h-96 flex justify-center items-center rounded-xl overflow-hidden bg-cream">
         <video
           ref={videoRef}
-          className="w-full h-full object-cover"
+          className="w-auto h-full object-contain"
           muted
           playsInline
           onEnded={handleVideoEnd}

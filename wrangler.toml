@@ -17,5 +17,5 @@ database_name = "raffle-db"
 database_id = "a0b797f9-ee8b-4302-bbc2-7af64cb84e2a"
 
 [triggers]
-crons = ["*/20 * * * *"]
+crons = ["*/10 * * * *"]
 
