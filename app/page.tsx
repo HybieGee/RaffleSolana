@@ -79,11 +79,21 @@ export default function HomePage() {
         <Header totalPaid={status?.totalPaid || 0} />
 
         {claimDetected && (
-          <div className="mt-4 mb-4 bg-yellow-100 border-4 border-yellow-400 rounded-xl p-6 animate-pulse">
-            <p className="text-3xl font-bold text-center text-yellow-800">
-              🎯 CLAIM DETECTED: {(claimDetected.amount / 1000000000).toFixed(3)} SOL
+          <div className="mt-4 mb-4 bg-gradient-to-r from-yellow-300 to-orange-300 border-4 border-yellow-500 rounded-xl p-8 animate-pulse shadow-2xl">
+            <p className="text-5xl font-bold text-center text-yellow-900 mb-2">
+              🎯 CLAIM DETECTED! 🎯
             </p>
-            <p className="text-center text-yellow-700 mt-2">Raffle starting NOW!</p>
+            <p className="text-4xl font-bold text-center text-yellow-800 mb-2">
+              {(claimDetected.amount / 1000000000).toFixed(3)} SOL
+            </p>
+            <p className="text-2xl text-center text-yellow-700 font-semibold">
+              🎰 RAFFLE STARTING NOW! 🎰
+            </p>
+            <div className="mt-4 text-center">
+              <span className="inline-block bg-yellow-600 text-white px-6 py-2 rounded-full font-bold">
+                LIVE ON STREAM
+              </span>
+            </div>
           </div>
         )}
 
