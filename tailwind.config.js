@@ -20,7 +20,7 @@ module.exports = {
           800: '#166534',
           900: '#14532d'
         },
-        cream: '#E8D4B0',
+        cream: '#efd29d',
         charcoal: '#2B2D30'
       },
       animation: {
