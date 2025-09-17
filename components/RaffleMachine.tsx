@@ -21,29 +21,18 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
-      <div className="relative w-full h-80 flex justify-center items-center">
-        {isDrawing ? (
-          <video
-            ref={videoRef}
-            className="w-full h-full object-contain rounded-xl"
-            muted
-            playsInline
-          >
-            <source src="/videos/raffle-animation.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        ) : (
-          <div className="flex justify-center items-center space-x-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="w-20 h-20 rounded-full bg-gradient-to-br from-mint-400 to-mint-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg"
-              >
-                {i}
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="relative w-full h-80 flex justify-center items-center bg-gray-100 rounded-xl">
+        <video
+          ref={videoRef}
+          className="w-full h-full object-contain rounded-xl"
+          muted
+          playsInline
+          poster="/videos/raffle-animation.mp4"
+          style={{ display: isDrawing ? 'block' : 'block' }}
+        >
+          <source src="/videos/raffle-animation.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
 
       {isDrawing && (
