@@ -3,7 +3,7 @@ import { getTokenHolders } from './solana'
 import { calculateWeights, selectWinners } from './weights'
 import { sendPayouts } from './payouts'
 import { saveDrawResult, updateDrawStatus } from './database'
-import { updateFeePool, deductFromPool, hasEnoughFeesForRaffle } from './fee-pool'
+import { detectNewClaim } from './pump-fees'
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -30,22 +30,26 @@ export async function runRaffle(env: Env): Promise<void> {
     const drawId = generateUUID()
     const startedAt = new Date().toISOString()
 
-    // Update fee pool with any new claims
-    const poolBalance = await updateFeePool(env)
+    // Check for new claim
+    const claimData = await detectNewClaim(env)
 
-    // Define raffle amount (how much each raffle costs)
-    const RAFFLE_AMOUNT = 100000000 // 0.1 SOL per raffle (adjust as needed)
-
-    // Check if pool has enough for a raffle
-    if (poolBalance < RAFFLE_AMOUNT) {
-      console.log(`Insufficient pool balance: ${poolBalance} lamports (need ${RAFFLE_AMOUNT})`)
-      console.log('Fee pool will accumulate from your Pump.fun claims')
+    if (!claimData || claimData.amount < 1000000) {
+      console.log('No new claim detected or amount too small')
       await env.KV_RAFFLE.delete(lockKey)
       return
     }
 
-    // Use the defined raffle amount for this draw
-    const raffleFees = RAFFLE_AMOUNT
+    console.log(`🎯 NEW CLAIM DETECTED: ${claimData.amount / 1000000000} SOL`)
+    console.log(`Transaction: ${claimData.signature}`)
+
+    // Update status for live streaming
+    await updateDrawPhase(env, 'claim_detected', {
+      amount: claimData.amount,
+      signature: claimData.signature
+    })
+
+    // Use the full claimed amount for this raffle
+    const claimedFees = claimData.amount
 
     const holders = await getTokenHolders(env)
     if (holders.length < 3) {
@@ -64,9 +68,9 @@ export async function runRaffle(env: Env): Promise<void> {
 
     await updateDrawPhase(env, 'selected_winners', { winners })
 
-    const payoutPool = Math.floor(raffleFees * 0.95)
+    const payoutPool = Math.floor(claimedFees * 0.95)
     const payoutPerWinner = Math.floor(payoutPool / 3)
-    const marketingShare = raffleFees - payoutPool
+    const marketingShare = claimedFees - payoutPool
 
     const payoutResults = await sendPayouts(env, winners, payoutPerWinner, marketingShare)
 
@@ -76,7 +80,7 @@ export async function runRaffle(env: Env): Promise<void> {
       drawId,
       startedAt,
       endedAt: new Date().toISOString(),
-      feeTotalLamports: raffleFees,
+      feeTotalLamports: claimedFees,
       oddsMode: env.ODDS_MODE as 'sqrt' | 'log',
       maxWeightRatio: parseFloat(env.MAX_WEIGHT_RATIO),
       status: 'completed',
@@ -91,11 +95,12 @@ export async function runRaffle(env: Env): Promise<void> {
 
     await saveDrawResult(env, drawResult)
 
-    // Deduct the raffle amount from the pool
-    await deductFromPool(env, raffleFees)
+    // Mark this claim as processed
+    await env.KV_RAFFLE.put('last_processed_claim_sig', claimData.signature)
+    await env.KV_RAFFLE.put('last_claim_time', Date.now().toString())
 
     await env.KV_RAFFLE.put('last_draw_time', Date.now().toString())
-    await env.KV_RAFFLE.put('total_paid', (await getTotalPaid(env) + raffleFees).toString())
+    await env.KV_RAFFLE.put('total_paid', (await getTotalPaid(env) + claimedFees).toString())
 
     const currentLock = await env.KV_RAFFLE.get(lockKey)
     if (currentLock === lockValue) {

@@ -11,7 +11,13 @@ export interface FeeCollection {
   endTime: number
 }
 
-export async function collectClaimedFees(env: Env): Promise<number> {
+export interface ClaimData {
+  amount: number
+  signature: string
+  timestamp: number
+}
+
+export async function detectNewClaim(env: Env): Promise<ClaimData | null> {
   const connection = new Connection(env.SOLANA_RPC_URL, 'confirmed')
 
   try {
@@ -60,37 +66,31 @@ export async function collectClaimedFees(env: Env): Promise<number> {
       }
     }
 
-    // Only update if we found new claims
-    if (latestClaimSig) {
-      await env.KV_RAFFLE.put('last_processed_claim_sig', latestClaimSig)
-      await env.KV_RAFFLE.put('last_claim_time', now.toString())
+    // Return immediately if we found a new claim
+    if (totalClaimedFees > 0 && latestClaimSig) {
+      console.log(`🎰 NEW CLAIM DETECTED: ${totalClaimedFees / 1000000000} SOL`)
+      return {
+        amount: totalClaimedFees,
+        signature: latestClaimSig,
+        timestamp: now
+      }
     }
 
-    // Store claim collection record
-    if (totalClaimedFees > 0) {
-      await env.KV_RAFFLE.put(
-        `claim_collection_${now}`,
-        JSON.stringify({
-          totalFees: totalClaimedFees,
-          transactions: processedClaims,
-          startTime: fromTime,
-          endTime: now
-        }),
-        { expirationTtl: 86400 * 7 }
-      )
-
-      console.log(`Collected ${totalClaimedFees} lamports from ${processedClaims.length} claim transactions`)
-    } else {
-      console.log('No new claimed fees found. Remember to claim fees on Pump.fun!')
-    }
-
-    return totalClaimedFees
+    return null
   } catch (error) {
-    console.error('Error collecting Pump.fun fees:', error)
+    console.error('Error detecting claim:', error)
 
-    const mockFees = Math.floor(Math.random() * 900000000) + 100000000
-    console.log(`Using mock fees for development: ${mockFees} lamports`)
-    return mockFees
+    // Mock claim for development
+    if (env.NETWORK === 'devnet') {
+      const mockAmount = Math.floor(Math.random() * 900000000) + 100000000
+      return {
+        amount: mockAmount,
+        signature: 'mock_' + Math.random().toString(36).substring(7),
+        timestamp: Date.now()
+      }
+    }
+
+    return null
   }
 }
 

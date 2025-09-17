@@ -1,16 +1,16 @@
-# $RAFFLE - Solana Raffle System
+# $RAFFLE - Live Solana Raffle System
 
-A livestream-friendly Solana raffle site with a fee pool system. Claim your Pump.fun creator fees anytime - the system accumulates them and runs raffles every 20 minutes when enough fees are available, distributing 95% to 3 winners and 5% to marketing.
+A livestream-optimized Solana raffle that instantly triggers when you claim Pump.fun creator fees. Perfect for live streaming - viewers see the claim detection, raffle draw, and payouts in real-time!
 
 ## Features
 
-- **Fee Pool System**: Accumulates claimed fees for multiple raffles
-- **Flexible Claiming**: Claim fees from Pump.fun whenever convenient
-- **Automatic Raffles**: Runs every 20 minutes when pool has enough funds
-- **Fixed Raffle Amount**: Each raffle uses 0.1 SOL (configurable)
-- **Fair Weighted Selection**: Uses sqrt or log algorithms for balanced odds
-- **3 Winners Per Draw**: Equal distribution of 95% of raffle amount
-- **Marketing Allocation**: 5% automatically sent to marketing wallet
+- **🎯 Instant Claim Detection**: Detects when you claim fees on Pump.fun
+- **🎰 Immediate Raffle**: Raffle starts instantly upon claim detection
+- **📺 Live Stream Ready**: Visual alerts and animations for streaming
+- **💰 Full Amount Distribution**: 95% of claimed amount split among 3 winners
+- **🎪 Exciting Visuals**: Animated raffle machine and claim notifications
+- **⚡ Real-time Updates**: Live winner announcements and payout tracking
+- **📊 Marketing Share**: 5% automatically sent to marketing wallet
 - **Real-time Updates**: Server-Sent Events (SSE) for live streaming
 - **Stream-Optimized UI**: Responsive design for 1920x1080 capture
 - **Fully Automated**: On-chain payouts with no manual intervention
@@ -172,38 +172,47 @@ wrangler d1 execute raffle-db --command="SELECT * FROM draws ORDER BY started_at
 wrangler d1 execute raffle-db --command="SELECT * FROM winners ORDER BY id DESC LIMIT 10"
 ```
 
-## Fee Pool System
+## Live Streaming Flow
 
-The system uses a smart fee pool that accumulates your Pump.fun claims:
+Perfect for engaging live streams:
 
 ### How It Works
 
-1. **Claim Anytime**: Claim creator fees on Pump.fun whenever you want
-2. **Pool Accumulation**: System adds claimed fees to the fee pool
-3. **Automatic Raffles**: Every 20 minutes:
-   - Checks if pool has enough for a raffle (0.1 SOL default)
-   - If yes, runs raffle and deducts from pool
-   - If no, skips and waits for next cycle
-4. **Multiple Raffles**: One claim can fund multiple raffles
-   - Example: Claim 1 SOL → Funds 10 raffles over 3+ hours
+1. **You Claim Fees on Pump.fun** (while streaming)
+2. **System Instantly Detects** the claim transaction
+3. **Live Alert Shows** on screen: "🎯 CLAIM DETECTED: X.XX SOL"
+4. **Raffle Begins Immediately** with animated lottery balls
+5. **3 Winners Selected** from token holders (weighted by balance)
+6. **Instant Payouts**: 95% split to winners, 5% to marketing
+7. **Results Display** with transaction links
 
-### Pool Management
+### Live Stream Experience
 
-- **Balance Tracking**: Always shows current pool balance
-- **Raffles Available**: Shows how many raffles the pool can fund
-- **No Rush**: Claim when convenient, not before each raffle
-- **Efficient**: Reduces gas costs by batching claims
-
-### Example Flow
 ```
-Day 1: Claim 2 SOL from Pump.fun → Pool: 2 SOL
-- Raffle 1 (20 min): Uses 0.1 SOL → Pool: 1.9 SOL ✓
-- Raffle 2 (40 min): Uses 0.1 SOL → Pool: 1.8 SOL ✓
-- ... continues until pool is depleted
+[STREAM VIEW]
+────────────────────────────────────
+Host: "Let me claim these Pump.fun fees..."
+*Claims 2 SOL on Pump.fun*
 
-Day 3: Claim 5 SOL from Pump.fun → Pool: 5 SOL
-- Funds 50 more raffles!
+🎯 CLAIM DETECTED: 2.000 SOL (Big yellow alert)
+"Raffle starting NOW!"
+
+🎰 Lottery balls animate...
+
+WINNERS ANNOUNCED:
+🥇 Wallet1: 0.633 SOL
+🥈 Wallet2: 0.633 SOL
+🥉 Wallet3: 0.633 SOL
+
+Payouts sent! View on Solscan →
+────────────────────────────────────
 ```
+
+### Perfect for Streaming Because:
+- **Instant Action**: No waiting for scheduled draws
+- **Visual Excitement**: Claim alerts and animations
+- **Viewer Engagement**: They see everything happen live
+- **Transparent**: All transactions verifiable on-chain
 
 ## Fairness
 

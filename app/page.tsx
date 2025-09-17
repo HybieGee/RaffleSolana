@@ -12,6 +12,7 @@ export default function HomePage() {
   const [status, setStatus] = useState<RaffleStatus | null>(null)
   const [winners, setWinners] = useState<Winner[]>([])
   const [isDrawing, setIsDrawing] = useState(false)
+  const [claimDetected, setClaimDetected] = useState<{ amount: number; signature: string } | null>(null)
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -42,6 +43,13 @@ export default function HomePage() {
 
     const eventSource = new EventSource('/stream')
 
+    eventSource.addEventListener('claim_detected', (event) => {
+      const data = JSON.parse(event.data)
+      setClaimDetected(data)
+      // Show claim notification for 5 seconds
+      setTimeout(() => setClaimDetected(null), 5000)
+    })
+
     eventSource.addEventListener('drawing', () => {
       setIsDrawing(true)
     })
@@ -55,6 +63,7 @@ export default function HomePage() {
     eventSource.addEventListener('payouts_sent', () => {
       fetchStatus()
       fetchWinners()
+      setClaimDetected(null)
     })
 
     return () => {
@@ -68,6 +77,15 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-mint-50 to-mint-100">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <Header totalPaid={status?.totalPaid || 0} />
+
+        {claimDetected && (
+          <div className="mt-4 mb-4 bg-yellow-100 border-4 border-yellow-400 rounded-xl p-6 animate-pulse">
+            <p className="text-3xl font-bold text-center text-yellow-800">
+              🎯 CLAIM DETECTED: {(claimDetected.amount / 1000000000).toFixed(3)} SOL
+            </p>
+            <p className="text-center text-yellow-700 mt-2">Raffle starting NOW!</p>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-8 mt-12">
           <div className="space-y-8">
