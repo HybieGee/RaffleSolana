@@ -98,12 +98,12 @@ export default function HomePage() {
         )}
 
         <div className="grid md:grid-cols-2 gap-8 mt-12">
-          <div className="space-y-8">
+          <div>
             <RaffleMachine isDrawing={isDrawing} />
-            <Countdown nextDrawTime={status?.nextDrawTime || Date.now() + 1200000} />
           </div>
 
           <div className="space-y-8">
+            <Countdown nextDrawTime={status?.nextDrawTime || Date.now() + 1200000} />
             <RecentWinners winners={winners} />
             <HowItWorks />
           </div>

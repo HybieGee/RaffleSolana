@@ -30,12 +30,12 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
   }
 
   return (
-    <div className="bg-cream rounded-2xl p-8 shadow-xl">
+    <div className="bg-cream rounded-2xl p-8 shadow-xl h-full">
       <h2 className="text-2xl font-bold text-center mb-6 text-charcoal">
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
-      <div className="relative w-full h-80 flex justify-center items-center rounded-xl overflow-hidden">
+      <div className="relative w-full h-96 flex justify-center items-center rounded-xl overflow-hidden">
         <video
           ref={videoRef}
           className="w-full h-full object-contain"
