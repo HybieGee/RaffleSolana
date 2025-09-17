@@ -18,7 +18,7 @@ export default function HomePage() {
     const fetchStatus = async () => {
       try {
         const response = await fetch('/api/status')
-        const data = await response.json()
+        const data = await response.json() as RaffleStatus
         setStatus(data)
       } catch (error) {
         console.error('Failed to fetch status:', error)
@@ -28,7 +28,7 @@ export default function HomePage() {
     const fetchWinners = async () => {
       try {
         const response = await fetch('/api/winners?limit=10')
-        const data = await response.json()
+        const data = await response.json() as Winner[]
         setWinners(data)
       } catch (error) {
         console.error('Failed to fetch winners:', error)
