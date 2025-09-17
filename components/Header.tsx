@@ -14,15 +14,15 @@ export default function Header({ totalPaid }: HeaderProps) {
   return (
     <header className="text-center">
       <h1 className="text-6xl font-bold text-cream mb-4">$RAFFLE</h1>
-      <div className="flex justify-center items-center gap-8 text-lg">
-        <div className="bg-cream rounded-lg px-6 py-3 shadow-md">
+      <div className="flex justify-center items-center gap-4 text-sm">
+        <div className="bg-cream rounded-lg px-4 py-2 shadow-md">
           <span className="text-gray-700">Total Paid: </span>
           <span className="font-bold text-charcoal">{formatSOL(totalPaid)} SOL</span>
         </div>
-        <div className="bg-cream rounded-lg px-6 py-3 shadow-md">
+        <div className="bg-cream rounded-lg px-4 py-2 shadow-md">
           <span className="text-gray-700">CA: </span>
-          <span className="font-mono text-sm text-charcoal">
-            {tokenAddress.slice(0, 6)}...{tokenAddress.slice(-6)}
+          <span className="font-mono text-xs text-charcoal">
+            {tokenAddress}
           </span>
         </div>
       </div>
