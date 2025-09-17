@@ -6,15 +6,15 @@ interface CountdownProps {
 
 export default function Countdown({ nextDrawTime }: CountdownProps) {
   return (
-    <div className="bg-charcoal rounded-2xl p-8 shadow-xl">
-      <h2 className="text-2xl font-bold text-center mb-4 text-cream">
+    <div className="bg-cream rounded-2xl p-8 shadow-xl">
+      <h2 className="text-2xl font-bold text-center mb-4 text-charcoal">
         🔴 LIVE RAFFLE SYSTEM
       </h2>
       <div className="text-center space-y-4">
-        <div className="text-3xl font-bold text-cream">
+        <div className="text-3xl font-bold text-charcoal">
           Instant Raffle on Claim!
         </div>
-        <div className="text-lg text-gray-300">
+        <div className="text-lg text-gray-700">
           Claim fees on Pump.fun to trigger raffle
         </div>
         <div className="flex justify-center">

@@ -30,12 +30,12 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
   }
 
   return (
-    <div className="bg-charcoal rounded-2xl p-8 shadow-xl">
-      <h2 className="text-2xl font-bold text-center mb-6 text-cream">
+    <div className="bg-cream rounded-2xl p-8 shadow-xl">
+      <h2 className="text-2xl font-bold text-center mb-6 text-charcoal">
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
-      <div className="relative w-full h-80 flex justify-center items-center bg-gray-800 rounded-xl overflow-hidden">
+      <div className="relative w-full h-80 flex justify-center items-center bg-charcoal/10 rounded-xl overflow-hidden">
         <video
           ref={videoRef}
           className="w-full h-full object-contain"
@@ -50,14 +50,14 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
 
       {isDrawing && (
         <div className="text-center mt-6">
-          <p className="text-cream font-semibold text-xl animate-pulse">
+          <p className="text-charcoal font-semibold text-xl animate-pulse">
             🎲 Selecting winner {loopCount + 1} of 3...
           </p>
         </div>
       )}
 
       {!isDrawing && (
-        <p className="text-center mt-6 text-gray-300">
+        <p className="text-center mt-6 text-gray-700">
           Waiting for fee claim to trigger raffle...
         </p>
       )}
