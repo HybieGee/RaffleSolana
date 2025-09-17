@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 
 interface RaffleMachineProps {
   isDrawing: boolean
@@ -6,14 +6,28 @@ interface RaffleMachineProps {
 
 export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [loopCount, setLoopCount] = useState(0)
 
   useEffect(() => {
     if (isDrawing && videoRef.current) {
       // Reset and play the animation when drawing starts
+      setLoopCount(0)
       videoRef.current.currentTime = 0
       videoRef.current.play()
+    } else if (!isDrawing && videoRef.current) {
+      // Pause at first frame when not drawing
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
     }
   }, [isDrawing])
+
+  const handleVideoEnd = () => {
+    if (isDrawing && loopCount < 2 && videoRef.current) {
+      // Play 3 times total (0, 1, 2)
+      setLoopCount(prev => prev + 1)
+      videoRef.current.play()
+    }
+  }
 
   return (
     <div className="bg-white rounded-2xl p-8 shadow-xl">
@@ -21,14 +35,13 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
-      <div className="relative w-full h-80 flex justify-center items-center bg-gray-100 rounded-xl">
+      <div className="relative w-full h-80 flex justify-center items-center bg-gray-100 rounded-xl overflow-hidden">
         <video
           ref={videoRef}
-          className="w-full h-full object-contain rounded-xl"
+          className="w-full h-full object-contain"
           muted
           playsInline
-          poster="/videos/raffle-animation.mp4"
-          style={{ display: isDrawing ? 'block' : 'block' }}
+          onEnded={handleVideoEnd}
         >
           <source src="/videos/raffle-animation.mp4" type="video/mp4" />
           Your browser does not support the video tag.
@@ -36,9 +49,11 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
       </div>
 
       {isDrawing && (
-        <p className="text-center mt-6 text-mint-600 font-semibold text-xl animate-pulse">
-          🎲 Selecting 3 winners from token holders...
-        </p>
+        <div className="text-center mt-6">
+          <p className="text-mint-600 font-semibold text-xl animate-pulse">
+            🎲 Selecting winner {loopCount + 1} of 3...
+          </p>
+        </div>
       )}
 
       {!isDrawing && (
