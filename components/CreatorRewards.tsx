@@ -36,13 +36,13 @@ export default function CreatorRewards() {
       // Fetch claims
       const claimsRes = await fetch(`${WORKER_URL}/api/creator-claims?limit=20`)
       if (!claimsRes.ok) throw new Error('Failed to fetch claims')
-      const claimsData = await claimsRes.json()
+      const claimsData = await claimsRes.json() as Claim[]
       setClaims(claimsData)
 
       // Fetch summary
       const summaryRes = await fetch(`${WORKER_URL}/api/creator-claims/summary?range=${summaryRange}`)
       if (!summaryRes.ok) throw new Error('Failed to fetch summary')
-      const summaryData = await summaryRes.json()
+      const summaryData = await summaryRes.json() as ClaimSummary
       setSummary(summaryData)
 
       setLoading(false)

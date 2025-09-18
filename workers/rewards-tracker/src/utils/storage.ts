@@ -55,7 +55,7 @@ export async function getClaims(
     : db.prepare(query);
 
   const result = await stmt.all();
-  return result.results as ClaimData[];
+  return result.results as unknown as ClaimData[];
 }
 
 export interface ClaimSummary {
