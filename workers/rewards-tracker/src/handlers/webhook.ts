@@ -13,6 +13,24 @@ export async function handleHeliusWebhook(
     return new Response('Unauthorized', { status: 401 });
   }
 
+  // Rate limiting: Max 100 requests per hour to protect against credit overuse
+  const rateLimitKey = 'webhook_rate_limit';
+  const currentHour = Math.floor(Date.now() / (1000 * 60 * 60));
+  const rateLimitData = await env.KV_SUMMARY.get(`${rateLimitKey}:${currentHour}`, 'json') as { count: number } | null;
+
+  const currentCount = rateLimitData?.count || 0;
+  if (currentCount >= 100) {
+    console.warn(`Rate limit exceeded: ${currentCount} requests this hour`);
+    return new Response('Rate limit exceeded - protecting your Helius credits', { status: 429 });
+  }
+
+  // Increment rate limit counter
+  await env.KV_SUMMARY.put(
+    `${rateLimitKey}:${currentHour}`,
+    JSON.stringify({ count: currentCount + 1 }),
+    { expirationTtl: 3600 } // Expire after 1 hour
+  );
+
   try {
     const webhookData = await request.json() as any;
     console.log('Received webhook:', JSON.stringify(webhookData, null, 2));

@@ -2,6 +2,7 @@ import { handleHeliusWebhook } from './handlers/webhook';
 import { handleGetClaims, handleGetSummary } from './handlers/api';
 import { handleReconcile } from './handlers/reconcile';
 import { handleHealth } from './handlers/health';
+import { handleUsageStats } from './handlers/usage';
 
 export interface Env {
   D1_CLAIMS: D1Database;
@@ -43,6 +44,9 @@ export default {
 
         case path === '/api/creator-claims/health' && request.method === 'GET':
           return await handleHealth(env);
+
+        case path === '/api/creator-claims/usage' && request.method === 'GET':
+          return await handleUsageStats(env);
 
         case path === '/internal/reconcile' && request.method === 'POST':
           return await handleReconcile(request, env, ctx);
