@@ -18,7 +18,7 @@ export async function handleReconcile(
   const limit = parseInt(url.searchParams.get('limit') || '100');
 
   try {
-    // Fetch historical transactions from Helius
+    // Fetch historical signatures from Helius
     const signatures = await fetchHistoricalSignatures(
       env.CREATOR_WALLET,
       env.HELIUS_API_KEY,
@@ -44,6 +44,7 @@ export async function handleReconcile(
       const tx = await fetchTransaction(sig.signature, env.HELIUS_API_KEY);
 
       if (tx) {
+        // Parse the transaction for Pump.fun claims
         const claim = await parsePumpClaim(tx, env);
 
         if (claim) {
@@ -78,8 +79,13 @@ export async function handleReconcile(
     );
   } catch (error) {
     console.error('Reconciliation error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: 'Reconciliation failed' }),
+      JSON.stringify({
+        error: 'Reconciliation failed',
+        details: errorMessage,
+        wallet: env.CREATOR_WALLET
+      }),
       {
         status: 500,
         headers: {
@@ -97,30 +103,88 @@ async function fetchHistoricalSignatures(
   before?: string,
   limit: number = 100
 ): Promise<any[]> {
-  const url = `https://api.helius.xyz/v0/addresses/${wallet}/signatures?api-key=${apiKey}&limit=${limit}${before ? `&before=${before}` : ''}`;
+  // Use RPC method via Helius to get signatures, then fetch transactions
+  const url = `https://api.helius.xyz/v0/transactions?api-key=${apiKey}`;
 
-  const response = await fetch(url);
+  const requestBody = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "getSignaturesForAddress",
+    params: [
+      wallet,
+      {
+        limit: limit,
+        ...(before && { before: before })
+      }
+    ]
+  };
+
+  console.log('Fetching signatures with:', JSON.stringify(requestBody, null, 2));
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody)
+  });
+
   if (!response.ok) {
-    throw new Error(`Failed to fetch signatures: ${response.statusText}`);
+    const errorText = await response.text();
+    console.error(`Helius API error: ${response.status} ${response.statusText}`, errorText);
+    throw new Error(`Failed to fetch transactions: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
-  return await response.json();
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(`Helius API error: ${data.error.message}`);
+  }
+
+  const signatures = data.result || [];
+  console.log(`Found ${signatures.length} signatures`);
+  return signatures;
 }
 
 async function fetchTransaction(
   signature: string,
   apiKey: string
 ): Promise<any> {
-  const url = `https://api.helius.xyz/v0/transactions/${signature}?api-key=${apiKey}`;
+  const url = `https://api.helius.xyz/v0/transactions?api-key=${apiKey}`;
+
+  const requestBody = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "getTransaction",
+    params: [
+      signature,
+      {
+        encoding: "jsonParsed",
+        maxSupportedTransactionVersion: 0
+      }
+    ]
+  };
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
     if (!response.ok) {
       console.error(`Failed to fetch transaction ${signature}: ${response.statusText}`);
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+    if (data.error) {
+      console.error(`Helius API error for ${signature}: ${data.error.message}`);
+      return null;
+    }
+
+    return data.result;
   } catch (error) {
     console.error(`Error fetching transaction ${signature}:`, error);
     return null;
