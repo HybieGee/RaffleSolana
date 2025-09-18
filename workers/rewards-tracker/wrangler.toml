@@ -9,12 +9,9 @@ NETWORK = "mainnet-beta"
 [[d1_databases]]
 binding = "D1_CLAIMS"
 database_name = "creator-claims"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "cc6fe3eb-3302-48f5-b995-6befe96d359d"
 
 [[kv_namespaces]]
 binding = "KV_SUMMARY"
-id = "YOUR_KV_NAMESPACE_ID"
+id = "56de0bbb945b4f908cc3a56b1eb0bf8e"
 
-[[migrations]]
-tag = "v1"
-new_classes = ["D1Database"]
