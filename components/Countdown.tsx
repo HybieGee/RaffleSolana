@@ -13,12 +13,12 @@ export default function Countdown({ nextDrawTime }: CountdownProps) {
       const minutes = now.getMinutes()
       const seconds = now.getSeconds()
 
-      // Calculate time until next :00 or :05 minute mark
+      // Calculate time until next 10-minute mark (:00, :10, :20, :30, :40, :50)
       let nextMinute
-      if (minutes % 5 === 0) {
-        nextMinute = minutes + 5
+      if (minutes % 10 === 0) {
+        nextMinute = minutes + 10
       } else {
-        nextMinute = Math.ceil(minutes / 5) * 5
+        nextMinute = Math.ceil(minutes / 10) * 10
       }
 
       if (nextMinute >= 60) nextMinute = 0
