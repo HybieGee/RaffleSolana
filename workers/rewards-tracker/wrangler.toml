@@ -1,0 +1,20 @@
+name = "rewards-tracker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NETWORK = "mainnet-beta"
+
+[[d1_databases]]
+binding = "D1_CLAIMS"
+database_name = "creator-claims"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "KV_SUMMARY"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["D1Database"]

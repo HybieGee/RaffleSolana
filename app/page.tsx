@@ -6,6 +6,7 @@ import RaffleMachine from '@/components/RaffleMachine'
 import Countdown from '@/components/Countdown'
 import RecentWinners from '@/components/RecentWinners'
 import HowItWorks from '@/components/HowItWorks'
+import CreatorRewards from '@/components/CreatorRewards'
 import { RaffleStatus, Winner } from '@/types'
 
 export default function HomePage() {
@@ -104,6 +105,7 @@ export default function HomePage() {
 
           <div className="space-y-6">
             <Countdown nextDrawTime={status?.nextDrawTime || Date.now() + 1200000} />
+            <CreatorRewards />
             <RecentWinners winners={winners} />
             <HowItWorks />
           </div>

@@ -1,0 +1,22 @@
+{
+  "name": "rewards-tracker",
+  "version": "1.0.0",
+  "description": "Pump.fun creator rewards tracker for $RAFFLE",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240925.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.89.0",
+    "bs58": "^5.0.0"
+  }
+}

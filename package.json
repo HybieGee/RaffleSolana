@@ -12,7 +12,11 @@
     "worker:dev": "wrangler dev",
     "worker:deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply raffle-db",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "rewards:install": "cd workers/rewards-tracker && npm install",
+    "rewards:dev": "cd workers/rewards-tracker && npm run dev",
+    "rewards:deploy": "cd workers/rewards-tracker && npm run deploy",
+    "rewards:test": "cd workers/rewards-tracker && npm test"
   },
   "dependencies": {
     "next": "14.2.5",
