@@ -35,6 +35,16 @@ export async function handleHeliusWebhook(
     const webhookData = await request.json() as any;
     console.log('Received webhook:', JSON.stringify(webhookData, null, 2));
 
+    // Log recent webhooks for debugging
+    const recentWebhooks = await env.KV_SUMMARY.get('recent_webhooks', 'json') as any[] || [];
+    recentWebhooks.unshift({
+      timestamp: new Date().toISOString(),
+      signature: webhookData.signature || 'batch',
+      type: webhookData.type || 'unknown',
+      accountKeys: webhookData.transaction?.message?.accountKeys?.slice(0, 3) || []
+    });
+    await env.KV_SUMMARY.put('recent_webhooks', JSON.stringify(recentWebhooks.slice(0, 10)));
+
     // Handle both single transaction and batch formats
     const transactions = Array.isArray(webhookData) ? webhookData : [webhookData];
 
