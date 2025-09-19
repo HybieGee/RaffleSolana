@@ -135,7 +135,7 @@ async function fetchHistoricalSignatures(
     throw new Error(`Failed to fetch transactions: ${response.status} ${response.statusText} - ${errorText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   if (data.error) {
     throw new Error(`Helius API error: ${data.error.message}`);
   }
@@ -178,7 +178,7 @@ async function fetchTransaction(
       return null;
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     if (data.error) {
       console.error(`Helius API error for ${signature}: ${data.error.message}`);
       return null;
