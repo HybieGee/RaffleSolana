@@ -20,16 +20,16 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
     const lastChecked = await env.KV_SUMMARY.get('last_checked_signature');
     console.log('Last checked signature:', lastChecked);
 
-    // Use Alchemy endpoint - monitor the PUMP FEE WALLET for ALL fee transactions
+    // Use Alchemy endpoint - monitor YOUR CREATOR WALLET directly
     const alchemyKey = env.ALCHEMY_API_KEY || 'SYEG70FAIl_t9bDEkh4ki';
     const rpcUrl = `https://solana-mainnet.g.alchemy.com/v2/${alchemyKey}`;
-    // Monitor the PUMP FEE WALLET - ALL fees go through this wallet
-    const pumpFeeWallet = 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
+    // Monitor YOUR creator wallet directly for incoming transfers
+    const creatorWallet = env.CREATOR_WALLET;
 
     console.log(`Using Alchemy key: ${alchemyKey ? 'Yes' : 'No (fallback)'}`);
-    console.log(`Monitoring PUMP FEE wallet: ${pumpFeeWallet}`);
+    console.log(`Monitoring creator wallet: ${creatorWallet}`);
 
-    const transactions = await fetchRecentTransactions(pumpFeeWallet, rpcUrl, lastChecked);
+    const transactions = await fetchRecentTransactions(creatorWallet, rpcUrl, lastChecked);
 
     let newClaims = 0;
     let checkedCount = 0;
@@ -47,13 +47,22 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
         continue;
       }
 
-      // Parse for Pump.fun claims
-      const claim = await parsePumpClaim(tx, env);
+      // Check if this transaction shows an incoming SOL transfer to creator wallet
+      const preBalance = tx.meta?.preBalances?.[0] || 0;
+      const postBalance = tx.meta?.postBalances?.[0] || 0;
+      const balanceChange = postBalance - preBalance;
 
-      if (claim) {
+      if (balanceChange > 0) {
+        const claim = {
+          signature: tx.signature,
+          time: tx.blockTime || Math.floor(Date.now() / 1000),
+          amountSol: balanceChange / 1e9,
+          wallet: env.CREATOR_WALLET
+        };
+
         await storeClaim(env.D1_CLAIMS, claim);
         newClaims++;
-        console.log(`Found new claim: ${claim.signature} - ${claim.amountSol} SOL`);
+        console.log(`✅ Found new claim: ${claim.signature} - ${claim.amountSol} SOL`);
 
         // Invalidate cache
         await Promise.all(['7d', '30d', 'all'].map(key =>
@@ -62,7 +71,7 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
 
         // Auto-trigger raffle for new claims
         try {
-          console.log(`Triggering raffle for new claim: ${claim.signature}`);
+          console.log(`🎰 Triggering raffle for new claim: ${claim.signature}`);
 
           // Use service binding for direct worker-to-worker communication
           const raffleResponse = await env.RAFFLE_SERVICE.fetch('https://raffle-worker/admin/force-draw', {
@@ -76,10 +85,10 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
           if (raffleResponse.ok) {
             console.log(`✅ Raffle triggered successfully for claim: ${claim.signature}`);
           } else {
-            console.error(`Failed to trigger raffle: ${raffleResponse.status} ${raffleResponse.statusText}`);
+            console.error(`❌ Failed to trigger raffle: ${raffleResponse.status} ${raffleResponse.statusText}`);
           }
         } catch (raffleError) {
-          console.error('Failed to trigger raffle, but continuing with claim storage:', raffleError);
+          console.error('❌ Failed to trigger raffle, but continuing with claim storage:', raffleError);
         }
       }
     }

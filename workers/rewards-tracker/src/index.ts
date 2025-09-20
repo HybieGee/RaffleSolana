@@ -1,4 +1,3 @@
-import { handleHeliusWebhook } from './handlers/webhook';
 import { handleGetClaims, handleGetSummary } from './handlers/api';
 import { handleReconcile } from './handlers/reconcile';
 import { handleHealth } from './handlers/health';
@@ -42,8 +41,6 @@ export default {
     try {
       // Route handlers
       switch (true) {
-        case path === '/api/hooks/helius' && request.method === 'POST':
-          return await handleHeliusWebhook(request, env, ctx);
 
         case path === '/api/creator-claims' && request.method === 'GET':
           return await handleGetClaims(request, env);

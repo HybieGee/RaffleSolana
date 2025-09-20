@@ -61,17 +61,59 @@ export async function handleHeliusWebhook(
     const transactions = Array.isArray(webhookData) ? webhookData : [webhookData];
 
     for (const txData of transactions) {
-      // Parse the transaction for Pump.fun claims
-      const claim = await parsePumpClaim(txData, env);
+      console.log(`Processing transaction: ${txData.signature}`);
 
-      if (claim) {
+      // Check if this involves your creator wallet receiving SOL
+      const creatorWallet = env.CREATOR_WALLET;
+      console.log(`Looking for transfers to creator wallet: ${creatorWallet}`);
+
+      // Look for native transfers TO the creator wallet
+      const nativeTransfers = txData.nativeTransfers || [];
+      const creatorTransfer = nativeTransfers.find((transfer: any) =>
+        transfer.toUserAccount === creatorWallet && transfer.amount > 0
+      );
+
+      if (creatorTransfer) {
+        console.log(`Found transfer to creator: ${creatorTransfer.amount} lamports`);
+
+        const claim = {
+          signature: txData.signature,
+          time: txData.timestamp || Math.floor(Date.now() / 1000),
+          amountSol: creatorTransfer.amount / 1e9,
+          wallet: creatorWallet
+        };
+
         // Store the claim in D1
         await storeClaim(env.D1_CLAIMS, claim);
 
         // Invalidate summary cache
         ctx.waitUntil(invalidateSummaryCache(env.KV_SUMMARY));
 
-        console.log(`Stored claim: ${claim.signature} - ${claim.amountSol} SOL`);
+        console.log(`✅ Stored claim: ${claim.signature} - ${claim.amountSol} SOL`);
+
+        // Auto-trigger raffle for new claims
+        try {
+          console.log(`🎰 Triggering raffle for new claim: ${claim.signature}`);
+
+          // Use service binding for direct worker-to-worker communication
+          const raffleResponse = await env.RAFFLE_SERVICE.fetch('https://raffle-worker/admin/force-draw', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${env.ADMIN_TOKEN || 'raffle_admin_2024'}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (raffleResponse.ok) {
+            console.log(`✅ Raffle triggered successfully for claim: ${claim.signature}`);
+          } else {
+            console.error(`❌ Failed to trigger raffle: ${raffleResponse.status} ${raffleResponse.statusText}`);
+          }
+        } catch (raffleError) {
+          console.error('❌ Failed to trigger raffle, but continuing with claim storage:', raffleError);
+        }
+      } else {
+        console.log(`No transfer to creator wallet found in transaction ${txData.signature}`);
       }
     }
 
