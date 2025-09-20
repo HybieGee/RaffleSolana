@@ -23,7 +23,7 @@ export default function CreatorRewards() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const WORKER_URL = process.env.NEXT_PUBLIC_REWARDS_WORKER_URL || 'https://rewards-tracker.YOUR_SUBDOMAIN.workers.dev'
+  const WORKER_URL = process.env.NEXT_PUBLIC_REWARDS_WORKER_URL || 'https://rewards-tracker.claudechaindev.workers.dev'
 
   useEffect(() => {
     fetchData()
