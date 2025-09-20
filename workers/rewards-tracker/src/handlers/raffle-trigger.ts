@@ -7,13 +7,10 @@ export async function handleTriggerRaffle(env: Env): Promise<Response> {
     // Get the last processed claim signature from raffle system
     const lastProcessedSig = await env.KV_SUMMARY.get('raffle_last_processed_claim');
 
-    // Get recent claims
-    const claimsRes = await fetch(`${env.RAFFLE_WORKER_URL || 'https://raffle-worker.YOUR_SUBDOMAIN.workers.dev'}/api/creator-claims?limit=5`);
-    if (!claimsRes.ok) {
-      throw new Error('Failed to fetch claims');
-    }
-
-    const claims = await claimsRes.json() as any[];
+    // Get recent claims directly from database
+    const stmt = env.D1_CLAIMS.prepare('SELECT * FROM claims ORDER BY time DESC LIMIT 5');
+    const result = await stmt.all();
+    const claims = result.results as any[];
 
     if (claims.length === 0) {
       return new Response(JSON.stringify({
@@ -28,12 +25,11 @@ export async function handleTriggerRaffle(env: Env): Promise<Response> {
       });
     }
 
-    // Sort by time (newest first)
-    claims.sort((a: any, b: any) => b.time - a.time);
+    // Claims are already sorted by time DESC, so first one is latest
     const latestClaim = claims[0];
 
     // Check if this is a new claim we haven't processed for raffle
-    if (lastProcessedSig === latestClaim.signature) {
+    if (lastProcessedSig === latestClaim.id) {
       return new Response(JSON.stringify({
         success: true,
         message: 'No new claims to process',
@@ -47,10 +43,10 @@ export async function handleTriggerRaffle(env: Env): Promise<Response> {
     }
 
     // Trigger the raffle worker
-    const raffleWorkerUrl = env.RAFFLE_WORKER_URL || 'https://raffle-worker.YOUR_SUBDOMAIN.workers.dev';
+    const raffleWorkerUrl = env.RAFFLE_WORKER_URL || 'https://raffle-worker.claudechaindev.workers.dev';
 
     try {
-      const raffleResponse = await fetch(`${raffleWorkerUrl}/force-draw`, {
+      const raffleResponse = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${env.RAFFLE_API_KEY || 'default-key'}`,
@@ -60,16 +56,16 @@ export async function handleTriggerRaffle(env: Env): Promise<Response> {
 
       if (raffleResponse.ok) {
         // Mark this claim as processed for raffle
-        await env.KV_SUMMARY.put('raffle_last_processed_claim', latestClaim.signature);
+        await env.KV_SUMMARY.put('raffle_last_processed_claim', latestClaim.id);
 
-        console.log(`✅ Raffle triggered for claim: ${latestClaim.signature} - ${latestClaim.amountSol} SOL`);
+        console.log(`✅ Raffle triggered for claim: ${latestClaim.id} - ${latestClaim.amount_sol} SOL`);
 
         return new Response(JSON.stringify({
           success: true,
-          message: `Raffle triggered for ${latestClaim.amountSol} SOL claim`,
+          message: `Raffle triggered for ${latestClaim.amount_sol} SOL claim`,
           triggered: true,
-          claimSignature: latestClaim.signature,
-          claimAmount: latestClaim.amountSol
+          claimSignature: latestClaim.id,
+          claimAmount: latestClaim.amount_sol
         }), {
           headers: {
             'Content-Type': 'application/json',
