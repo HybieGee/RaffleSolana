@@ -8,7 +8,8 @@ export async function handleDebugInfo(env: Env): Promise<Response> {
     configured: {
       creator_wallet: env.CREATOR_WALLET,
       pump_program_id: env.PUMP_PROGRAM_ID,
-      has_api_key: !!env.HELIUS_API_KEY,
+      has_alchemy_key: !!env.ALCHEMY_API_KEY,
+      has_helius_key: !!env.HELIUS_API_KEY,
       has_webhook_key: !!env.ALLOWED_WEBHOOK_KEY
     },
     recent_webhooks: recentWebhooks.slice(0, 5),

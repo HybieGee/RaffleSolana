@@ -18,10 +18,16 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
 
     // Get last checked signature from KV
     const lastChecked = await env.KV_SUMMARY.get('last_checked_signature');
+    console.log('Last checked signature:', lastChecked);
 
-    // Use Alchemy endpoint directly - monitor the Pump.fun fee source wallet for outgoing transactions
-    const rpcUrl = 'https://solana-mainnet.g.alchemy.com/v2/SYEG70FAIl_t9bDEkh4ki';
+    // Use Alchemy endpoint - monitor the Pump.fun fee source wallet for outgoing transactions
+    const alchemyKey = env.ALCHEMY_API_KEY || 'SYEG70FAIl_t9bDEkh4ki';
+    const rpcUrl = `https://solana-mainnet.g.alchemy.com/v2/${alchemyKey}`;
     const sourceWallet = env.PUMP_FEE_SOURCE_WALLET || 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
+
+    console.log(`Using Alchemy key: ${alchemyKey ? 'Yes' : 'No (fallback)'}`);
+    console.log(`Monitoring wallet: ${sourceWallet}`);
+
     const transactions = await fetchRecentTransactions(sourceWallet, rpcUrl, lastChecked);
 
     let newClaims = 0;
@@ -152,7 +158,7 @@ async function fetchRecentTransactions(
 
   // Fetch full transaction details for each signature
   const transactions = [];
-  for (const sig of signatures.slice(0, 10)) { // Limit to 10 to avoid timeout
+  for (const sig of signatures) { // Process all signatures
     try {
       const tx = await fetchTransaction(sig.signature, rpcUrl);
       if (tx) {
