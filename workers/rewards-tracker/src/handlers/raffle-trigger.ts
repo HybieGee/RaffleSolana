@@ -42,14 +42,12 @@ export async function handleTriggerRaffle(env: Env): Promise<Response> {
       });
     }
 
-    // Trigger the raffle worker
-    const raffleWorkerUrl = env.RAFFLE_WORKER_URL || 'https://raffle-worker.claudechaindev.workers.dev';
-
+    // Trigger the raffle worker using service binding
     try {
-      const raffleResponse = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
+      const raffleResponse = await env.RAFFLE_SERVICE.fetch('https://raffle-worker/admin/force-draw', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${env.ADMIN_TOKEN || 'my-secure-raffle-token-2024'}`,
+          'Authorization': `Bearer ${env.ADMIN_TOKEN || 'raffle_admin_2024'}`,
           'Content-Type': 'application/json'
         }
       });

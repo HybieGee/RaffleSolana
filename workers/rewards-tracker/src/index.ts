@@ -10,6 +10,7 @@ import { handleTriggerRaffle } from './handlers/raffle-trigger';
 export interface Env {
   D1_CLAIMS: D1Database;
   KV_SUMMARY: KVNamespace;
+  RAFFLE_SERVICE: Fetcher;
   CREATOR_WALLET: string;
   PUMP_FEE_SOURCE_WALLET: string;
   PUMP_PROGRAM_ID: string;
@@ -76,15 +77,12 @@ export default {
           });
 
         case path === '/internal/test-raffle' && request.method === 'POST':
-          // Test raffle trigger directly
+          // Test raffle trigger directly using service binding
           try {
-            const raffleWorkerUrl = 'https://raffle-worker.claudechaindev.workers.dev';
-            const token = 'my-secure-raffle-token-2024';
-
-            const response = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
+            const response = await env.RAFFLE_SERVICE.fetch('https://raffle-worker/admin/force-draw', {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${env.ADMIN_TOKEN || 'raffle_admin_2024'}`,
                 'Content-Type': 'application/json'
               }
             });

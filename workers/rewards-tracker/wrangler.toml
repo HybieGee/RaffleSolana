@@ -18,3 +18,7 @@ id = "56de0bbb945b4f908cc3a56b1eb0bf8e"
 [triggers]
 crons = ["* * * * *"]
 
+[[services]]
+binding = "RAFFLE_SERVICE"
+service = "raffle-worker"
+

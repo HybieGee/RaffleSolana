@@ -20,16 +20,16 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
     const lastChecked = await env.KV_SUMMARY.get('last_checked_signature');
     console.log('Last checked signature:', lastChecked);
 
-    // Use Alchemy endpoint - monitor YOUR wallet for incoming fee claims
+    // Use Alchemy endpoint - monitor the PUMP FEE WALLET for ALL fee transactions
     const alchemyKey = env.ALCHEMY_API_KEY || 'SYEG70FAIl_t9bDEkh4ki';
     const rpcUrl = `https://solana-mainnet.g.alchemy.com/v2/${alchemyKey}`;
-    // Monitor YOUR wallet directly for incoming transactions
-    const yourWallet = env.CREATOR_WALLET || '8NwUT5jyjPdWcjjWrqTQNwuGiRZMrS6o3pwYTE3Kjwfi';
+    // Monitor the PUMP FEE WALLET - ALL fees go through this wallet
+    const pumpFeeWallet = 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
 
     console.log(`Using Alchemy key: ${alchemyKey ? 'Yes' : 'No (fallback)'}`);
-    console.log(`Monitoring YOUR wallet: ${yourWallet}`);
+    console.log(`Monitoring PUMP FEE wallet: ${pumpFeeWallet}`);
 
-    const transactions = await fetchRecentTransactions(yourWallet, rpcUrl, lastChecked);
+    const transactions = await fetchRecentTransactions(pumpFeeWallet, rpcUrl, lastChecked);
 
     let newClaims = 0;
     let checkedCount = 0;
@@ -62,13 +62,13 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
 
         // Auto-trigger raffle for new claims
         try {
-          const raffleWorkerUrl = env.RAFFLE_WORKER_URL || 'https://raffle-worker.claudechaindev.workers.dev';
           console.log(`Triggering raffle for new claim: ${claim.signature}`);
 
-          const raffleResponse = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
+          // Use service binding for direct worker-to-worker communication
+          const raffleResponse = await env.RAFFLE_SERVICE.fetch('https://raffle-worker/admin/force-draw', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${env.ADMIN_TOKEN || 'my-secure-raffle-token-2024'}`,
+              'Authorization': `Bearer ${env.ADMIN_TOKEN || 'raffle_admin_2024'}`,
               'Content-Type': 'application/json'
             }
           });
