@@ -15,3 +15,6 @@ database_id = "cc6fe3eb-3302-48f5-b995-6befe96d359d"
 binding = "KV_SUMMARY"
 id = "56de0bbb945b4f908cc3a56b1eb0bf8e"
 
+[triggers]
+crons = ["*/30 * * * *"]
+

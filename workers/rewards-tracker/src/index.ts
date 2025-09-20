@@ -4,6 +4,7 @@ import { handleReconcile } from './handlers/reconcile';
 import { handleHealth } from './handlers/health';
 import { handleUsageStats } from './handlers/usage';
 import { handleDebugInfo } from './handlers/debug';
+import { handlePollForClaims } from './handlers/poll';
 
 export interface Env {
   D1_CLAIMS: D1Database;
@@ -11,6 +12,7 @@ export interface Env {
   CREATOR_WALLET: string;
   PUMP_PROGRAM_ID: string;
   HELIUS_API_KEY: string;
+  ALCHEMY_API_KEY: string;
   ALLOWED_WEBHOOK_KEY: string;
 }
 
@@ -55,6 +57,9 @@ export default {
         case path === '/internal/reconcile' && request.method === 'POST':
           return await handleReconcile(request, env, ctx);
 
+        case path === '/internal/poll' && request.method === 'POST':
+          return await handlePollForClaims(env);
+
         default:
           return new Response('Not Found', { status: 404, headers: corsHeaders });
       }
@@ -67,6 +72,15 @@ export default {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
+    }
+  },
+
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    console.log('Scheduled polling triggered at:', new Date().toISOString());
+    try {
+      await handlePollForClaims(env);
+    } catch (error) {
+      console.error('Scheduled polling error:', error);
     }
   },
 };
