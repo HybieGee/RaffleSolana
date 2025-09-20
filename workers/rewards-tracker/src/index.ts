@@ -10,6 +10,7 @@ export interface Env {
   D1_CLAIMS: D1Database;
   KV_SUMMARY: KVNamespace;
   CREATOR_WALLET: string;
+  PUMP_FEE_SOURCE_WALLET: string;
   PUMP_PROGRAM_ID: string;
   HELIUS_API_KEY: string;
   ALCHEMY_API_KEY: string;

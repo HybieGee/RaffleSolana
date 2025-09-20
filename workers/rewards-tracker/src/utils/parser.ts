@@ -18,57 +18,48 @@ export async function parsePumpClaim(
   env: Env
 ): Promise<ClaimData | null> {
   try {
-    // Check if transaction involves the creator wallet
-    const accountKeys = txData.transaction?.message?.accountKeys || [];
-    const creatorIndex = accountKeys.findIndex(
-      (key: any) => (typeof key === 'string' ? key : key.pubkey) === env.CREATOR_WALLET
+    // Check if this is a transaction FROM the source wallet TO the creator wallet
+    const logs = txData.meta?.logMessages || [];
+    const hasCollectCreatorFee = logs.some((log: string) =>
+      log.includes('Program log: Instruction: CollectCreatorFee')
     );
 
-    if (creatorIndex === -1) {
-      return null; // Transaction doesn't involve creator wallet
-    }
-
-    // Check for Pump program in instructions
-    const instructions = [
-      ...(txData.transaction?.message?.instructions || []),
-      ...(txData.meta?.innerInstructions?.flatMap((inner: any) => inner.instructions) || [])
-    ];
-
-    let isPumpClaim = false;
-    for (const instruction of instructions) {
-      const programId = accountKeys[instruction.programIdIndex];
-      const programIdStr = typeof programId === 'string' ? programId : programId?.pubkey;
-
-      if (programIdStr === env.PUMP_PROGRAM_ID) {
-        // Check instruction data for claim/withdraw discriminator
-        const data = instruction.data;
-        if (data && typeof data === 'string') {
-          // Decode base58/base64 and check discriminator
-          // For now, we'll accept any Pump instruction that credits the creator
-          isPumpClaim = true;
-          break;
-        }
-      }
-    }
-
-    if (!isPumpClaim) {
+    if (!hasCollectCreatorFee) {
       return null;
     }
 
-    // Calculate net lamports change for creator wallet
-    const preBalance = txData.meta?.preBalances?.[creatorIndex] || 0;
-    const postBalance = txData.meta?.postBalances?.[creatorIndex] || 0;
-    const netChange = postBalance - preBalance;
+    // Look for the SOL transfer in inner instructions
+    const innerInstructions = txData.meta?.innerInstructions || [];
+    let transferAmount = 0;
+    let isValidTransfer = false;
 
-    // Only process if creator received funds (claim/withdraw)
-    if (netChange <= 0) {
+    for (const inner of innerInstructions) {
+      for (const instruction of inner.instructions) {
+        if (instruction.parsed?.type === 'transfer') {
+          const transfer = instruction.parsed.info;
+          const sourceWallet = env.PUMP_FEE_SOURCE_WALLET || 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
+
+          // Check if transfer is from source wallet to creator wallet
+          if (transfer.source === sourceWallet && transfer.destination === env.CREATOR_WALLET) {
+            transferAmount = transfer.lamports;
+            isValidTransfer = true;
+            break;
+          }
+        }
+      }
+      if (isValidTransfer) break;
+    }
+
+    if (!isValidTransfer || transferAmount <= 0) {
       return null;
     }
 
     // Extract transaction details
     const signature = txData.transaction?.signatures?.[0] || txData.signature;
     const blockTime = txData.blockTime || Math.floor(Date.now() / 1000);
-    const amountSol = netChange / 1e9; // Convert lamports to SOL
+    const amountSol = transferAmount / 1e9; // Convert lamports to SOL
+
+    console.log(`Found valid Pump.fun fee claim: ${signature} - ${amountSol} SOL`);
 
     return {
       signature,

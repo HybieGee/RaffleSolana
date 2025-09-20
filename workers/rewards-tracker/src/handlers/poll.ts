@@ -19,9 +19,10 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
     // Get last checked signature from KV
     const lastChecked = await env.KV_SUMMARY.get('last_checked_signature');
 
-    // Use Alchemy endpoint directly
+    // Use Alchemy endpoint directly - monitor the Pump.fun fee source wallet for outgoing transactions
     const rpcUrl = 'https://solana-mainnet.g.alchemy.com/v2/SYEG70FAIl_t9bDEkh4ki';
-    const transactions = await fetchRecentTransactions(env.CREATOR_WALLET, rpcUrl, lastChecked);
+    const sourceWallet = env.PUMP_FEE_SOURCE_WALLET || 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
+    const transactions = await fetchRecentTransactions(sourceWallet, rpcUrl, lastChecked);
 
     let newClaims = 0;
     let checkedCount = 0;
