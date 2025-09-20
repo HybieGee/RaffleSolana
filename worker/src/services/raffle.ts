@@ -3,7 +3,7 @@ import { getTokenHolders } from './solana'
 import { calculateWeights, selectWinners } from './weights'
 import { sendPayouts } from './payouts'
 import { saveDrawResult, updateDrawStatus } from './database'
-import { detectNewClaim } from './pump-fees'
+import { detectNewClaimFromTracker } from './rewards-integration'
 function generateUUID(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
@@ -30,8 +30,8 @@ export async function runRaffle(env: Env): Promise<void> {
     const drawId = generateUUID()
     const startedAt = new Date().toISOString()
 
-    // Check for new claim
-    const claimData = await detectNewClaim(env)
+    // Check for new claim from rewards tracker
+    const claimData = await detectNewClaimFromTracker(env)
 
     if (!claimData || claimData.amount < 1000000) {
       console.log('No new claim detected or amount too small')

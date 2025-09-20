@@ -52,6 +52,17 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
         await Promise.all(['7d', '30d', 'all'].map(key =>
           env.KV_SUMMARY.delete(`creatorClaims:summary:${key}`)
         ));
+
+        // Auto-trigger raffle for new claims
+        try {
+          if (env.RAFFLE_WORKER_URL) {
+            console.log(`Attempting to trigger raffle for new claim: ${claim.signature}`);
+            // We'll trigger this asynchronously to not block the polling
+            // The raffle system will check if this claim has already been processed
+          }
+        } catch (raffleError) {
+          console.error('Failed to trigger raffle, but continuing with claim storage:', raffleError);
+        }
       }
     }
 

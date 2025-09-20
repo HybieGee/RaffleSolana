@@ -5,6 +5,7 @@ import { handleHealth } from './handlers/health';
 import { handleUsageStats } from './handlers/usage';
 import { handleDebugInfo } from './handlers/debug';
 import { handlePollForClaims } from './handlers/poll';
+import { handleTriggerRaffle } from './handlers/raffle-trigger';
 
 export interface Env {
   D1_CLAIMS: D1Database;
@@ -15,6 +16,8 @@ export interface Env {
   HELIUS_API_KEY: string;
   ALCHEMY_API_KEY: string;
   ALLOWED_WEBHOOK_KEY: string;
+  RAFFLE_WORKER_URL: string;
+  RAFFLE_API_KEY: string;
 }
 
 export default {
@@ -60,6 +63,9 @@ export default {
 
         case path === '/internal/poll' && request.method === 'POST':
           return await handlePollForClaims(env);
+
+        case path === '/internal/trigger-raffle' && request.method === 'POST':
+          return await handleTriggerRaffle(env);
 
         default:
           return new Response('Not Found', { status: 404, headers: corsHeaders });
