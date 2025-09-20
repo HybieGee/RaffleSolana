@@ -130,7 +130,7 @@ async function fetchRecentTransactions(
     throw new Error(`RPC error: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   if (data.error) {
     throw new Error(`RPC error: ${data.error.message}`);
   }
@@ -187,7 +187,7 @@ async function fetchTransaction(
     throw new Error(`Failed to fetch transaction: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   if (data.error) {
     throw new Error(`RPC error: ${data.error.message}`);
   }
