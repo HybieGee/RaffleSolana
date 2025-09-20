@@ -84,7 +84,7 @@ export default function CreatorRewards() {
   }
 
   return (
-    <div className="bg-cream rounded-2xl p-4 shadow-xl">
+    <div className="bg-cream rounded-2xl p-3 shadow-xl">
       <h2 className="text-lg font-bold text-center mb-4 text-charcoal">
         💰 Creator Rewards Tracker
       </h2>
@@ -144,7 +144,7 @@ export default function CreatorRewards() {
           )}
 
           {/* Recent Claims Table */}
-          <div className="space-y-1 max-h-48 overflow-y-auto">
+          <div className="space-y-1 max-h-32 overflow-y-auto">
             <h3 className="text-sm font-semibold text-charcoal mb-2">Recent Claims</h3>
             {claims.length === 0 ? (
               <p className="text-gray-500 text-center py-2 text-sm">No claims yet</p>

@@ -35,7 +35,7 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
         {isDrawing ? '🎰 DRAWING WINNERS...' : '🎯 RAFFLE MACHINE'}
       </h2>
 
-      <div className="relative w-full h-96 flex justify-center items-center rounded-xl overflow-hidden bg-cream">
+      <div className="relative w-full h-64 flex justify-center items-center rounded-xl overflow-hidden bg-cream">
         <video
           ref={videoRef}
           className="w-auto h-full object-contain"
@@ -55,6 +55,37 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
           </p>
         </div>
       )}
+
+      {/* How It Works Section */}
+      <div className="mt-4 pt-4 border-t border-charcoal/20">
+        <h3 className="text-lg font-bold mb-3 text-charcoal">How It Works</h3>
+        <ul className="space-y-2 text-sm">
+          <li className="flex items-start">
+            <span className="text-charcoal mr-2">•</span>
+            <span className="text-gray-700">Automatic raffle every 10 minutes</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-charcoal mr-2">•</span>
+            <span className="text-gray-700">3 winners selected per draw</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-charcoal mr-2">•</span>
+            <span className="text-gray-700">95% of creator fees split among winners</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-charcoal mr-2">•</span>
+            <span className="text-gray-700">Hold tokens for better odds (weighted by sqrt or log)</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-charcoal mr-2">•</span>
+            <span className="text-gray-700">Fair distribution with max 5x weight ratio</span>
+          </li>
+          <li className="flex items-start">
+            <span className="text-charcoal mr-2">•</span>
+            <span className="text-gray-700">Fully automated payouts on-chain</span>
+          </li>
+        </ul>
+      </div>
     </div>
   )
 }

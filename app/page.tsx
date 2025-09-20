@@ -5,7 +5,6 @@ import Header from '@/components/Header'
 import RaffleMachine from '@/components/RaffleMachine'
 import Countdown from '@/components/Countdown'
 import RecentWinners from '@/components/RecentWinners'
-import HowItWorks from '@/components/HowItWorks'
 import CreatorRewards from '@/components/CreatorRewards'
 import { RaffleStatus, Winner } from '@/types'
 
@@ -75,8 +74,24 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-charcoal">
-      <div className="container mx-auto px-4 py-4 max-w-7xl">
+    <div className="min-h-screen bg-charcoal relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cream rounded-full animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-cream rounded-full animate-bounce delay-1000"></div>
+        <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-cream rounded-full animate-ping delay-2000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-cream rounded-full animate-pulse delay-500"></div>
+        <div className="absolute top-1/3 left-2/3 w-12 h-12 bg-cream rounded-full animate-bounce delay-1500"></div>
+        <div className="floating-shapes">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+          <div className="shape shape-4"></div>
+          <div className="shape shape-5"></div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-4 max-w-7xl relative z-10">
         <Header totalPaid={status?.totalPaid || 0} />
 
         {claimDetected && (
@@ -98,16 +113,15 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="grid md:grid-cols-2 gap-4 mt-4">
           <div>
             <RaffleMachine isDrawing={isDrawing} />
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Countdown nextDrawTime={status?.nextDrawTime || Date.now() + 1200000} />
             <CreatorRewards />
             <RecentWinners winners={winners} />
-            <HowItWorks />
           </div>
         </div>
       </div>
