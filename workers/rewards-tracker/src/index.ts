@@ -76,6 +76,13 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
 
+        case path === '/internal/start-high-freq' && request.method === 'POST':
+          // Manually start high-frequency polling for testing
+          ctx.waitUntil(startHighFrequencyPolling(env));
+          return new Response(JSON.stringify({ success: true, message: 'High-frequency polling started' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+
         case path === '/internal/test-raffle' && request.method === 'POST':
           // Test raffle trigger directly using service binding
           try {
@@ -123,8 +130,40 @@ export default {
     console.log('Scheduled polling triggered at:', new Date().toISOString());
     try {
       await handlePollForClaims(env);
+
+      // Start high-frequency polling for the next 60 seconds
+      ctx.waitUntil(startHighFrequencyPolling(env));
     } catch (error) {
       console.error('Scheduled polling error:', error);
     }
   },
 };
+
+// High-frequency polling function
+async function startHighFrequencyPolling(env: Env): Promise<void> {
+  const startTime = Date.now();
+  const pollInterval = 5000; // 5 seconds
+  const maxDuration = 55000; // Run for 55 seconds (less than 60 to avoid overlapping with next cron)
+
+  async function poll() {
+    try {
+      if (Date.now() - startTime > maxDuration) {
+        console.log('High-frequency polling session ended');
+        return;
+      }
+
+      console.log('High-frequency poll check...');
+      await handlePollForClaims(env);
+
+      // Schedule next poll
+      setTimeout(poll, pollInterval);
+    } catch (error) {
+      console.error('High-frequency polling error:', error);
+      // Continue polling despite errors
+      setTimeout(poll, pollInterval);
+    }
+  }
+
+  // Start the polling loop
+  poll();
+}

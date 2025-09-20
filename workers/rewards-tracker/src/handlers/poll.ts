@@ -140,7 +140,7 @@ async function fetchRecentTransactions(
     params: [
       wallet,
       {
-        limit: 20,
+        limit: 10,
         ...(before && { before: before })
       }
     ]

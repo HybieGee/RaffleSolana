@@ -25,7 +25,10 @@ export async function parsePumpClaim(
     const isCreatorFee = logs.some((log: string) =>
       log.toLowerCase().includes('collect_creator_fee') ||
       log.toLowerCase().includes('get_fees') ||
-      log.toLowerCase().includes('collectcreatorfee')
+      log.toLowerCase().includes('collectcreatorfee') ||
+      log.toLowerCase().includes('collectcreatorfee') ||
+      log.includes('CollectCreatorFee') ||
+      log.includes('Instruction: CollectCreatorFee')
     );
 
     if (!isCreatorFee) {
