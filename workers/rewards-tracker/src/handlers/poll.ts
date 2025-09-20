@@ -62,10 +62,21 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
 
         // Auto-trigger raffle for new claims
         try {
-          if (env.RAFFLE_WORKER_URL) {
-            console.log(`Attempting to trigger raffle for new claim: ${claim.signature}`);
-            // We'll trigger this asynchronously to not block the polling
-            // The raffle system will check if this claim has already been processed
+          const raffleWorkerUrl = env.RAFFLE_WORKER_URL || 'https://raffle-worker.claudechaindev.workers.dev';
+          console.log(`Triggering raffle for new claim: ${claim.signature}`);
+
+          const raffleResponse = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${env.ADMIN_TOKEN || 'my-secure-raffle-token-2024'}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (raffleResponse.ok) {
+            console.log(`✅ Raffle triggered successfully for claim: ${claim.signature}`);
+          } else {
+            console.error(`Failed to trigger raffle: ${raffleResponse.status} ${raffleResponse.statusText}`);
           }
         } catch (raffleError) {
           console.error('Failed to trigger raffle, but continuing with claim storage:', raffleError);

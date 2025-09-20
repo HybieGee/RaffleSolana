@@ -75,6 +75,37 @@ export default {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           });
 
+        case path === '/internal/test-raffle' && request.method === 'POST':
+          // Test raffle trigger directly
+          try {
+            const raffleWorkerUrl = 'https://raffle-worker.claudechaindev.workers.dev';
+            const token = 'my-secure-raffle-token-2024';
+
+            const response = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            return new Response(JSON.stringify({
+              success: response.ok,
+              status: response.status,
+              statusText: response.statusText,
+              body: await response.text()
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          } catch (error) {
+            return new Response(JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+          }
+
         default:
           return new Response('Not Found', { status: 404, headers: corsHeaders });
       }
