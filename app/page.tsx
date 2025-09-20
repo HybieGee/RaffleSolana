@@ -14,10 +14,12 @@ export default function HomePage() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [claimDetected, setClaimDetected] = useState<{ amount: number; signature: string } | null>(null)
 
+  const RAFFLE_WORKER_URL = process.env.NEXT_PUBLIC_RAFFLE_WORKER_URL || 'https://raffle-worker.claudechaindev.workers.dev'
+
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('/api/status')
+        const response = await fetch(`${RAFFLE_WORKER_URL}/api/status`)
         const data = await response.json() as RaffleStatus
         setStatus(data)
       } catch (error) {
@@ -27,7 +29,7 @@ export default function HomePage() {
 
     const fetchWinners = async () => {
       try {
-        const response = await fetch('/api/winners?limit=10')
+        const response = await fetch(`${RAFFLE_WORKER_URL}/api/winners?limit=10`)
         const data = await response.json() as Winner[]
         setWinners(data)
       } catch (error) {
@@ -41,7 +43,7 @@ export default function HomePage() {
     const statusInterval = setInterval(fetchStatus, 5000)
     const winnersInterval = setInterval(fetchWinners, 20000)
 
-    const eventSource = new EventSource('/stream')
+    const eventSource = new EventSource(`${RAFFLE_WORKER_URL}/stream`)
 
     eventSource.addEventListener('claim_detected', (event) => {
       const data = JSON.parse(event.data)
