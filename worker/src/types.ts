@@ -13,6 +13,8 @@ export interface Env {
   MIN_BALANCE_FOR_ELIGIBILITY: string
   ADMIN_TOKEN?: string
   REWARDS_WORKER_URL?: string
+  RAFFLE_WORKER_URL?: string
+  RAFFLE_API_KEY?: string
 }
 
 export interface Holder {
