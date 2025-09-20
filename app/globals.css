@@ -142,3 +142,213 @@
   left: 50%;
   animation: drift 9s ease-in-out infinite reverse;
 }
+
+.shape-6 {
+  width: 45px;
+  height: 45px;
+  top: 15%;
+  left: 60%;
+  animation: float 5s ease-in-out infinite;
+}
+
+.shape-7 {
+  width: 25px;
+  height: 25px;
+  top: 85%;
+  left: 70%;
+  animation: drift 12s ease-in-out infinite;
+}
+
+.shape-8 {
+  width: 55px;
+  height: 55px;
+  top: 40%;
+  left: 15%;
+  animation: float-reverse 6s ease-in-out infinite;
+}
+
+.shape-9 {
+  width: 38px;
+  height: 38px;
+  top: 65%;
+  left: 45%;
+  animation: drift 8s ease-in-out infinite reverse;
+}
+
+.shape-10 {
+  width: 42px;
+  height: 42px;
+  top: 25%;
+  left: 85%;
+  animation: float 11s ease-in-out infinite reverse;
+}
+
+/* Moving lines animation */
+@keyframes diagonal-move {
+  0% {
+    transform: translateX(-100px) translateY(-100px);
+  }
+  100% {
+    transform: translateX(100vw) translateY(100vh);
+  }
+}
+
+.moving-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.line {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  background: linear-gradient(45deg, transparent, rgba(248, 245, 236, 0.1), transparent);
+  animation: diagonal-move 15s linear infinite;
+}
+
+.line-1 {
+  animation-delay: 0s;
+  left: -100px;
+  top: 10%;
+}
+
+.line-2 {
+  animation-delay: 5s;
+  left: -100px;
+  top: 50%;
+}
+
+.line-3 {
+  animation-delay: 10s;
+  left: -100px;
+  top: 80%;
+}
+
+/* Rotating elements */
+@keyframes slow-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes reverse-rotate {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotating-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.rotate-element {
+  position: absolute;
+  border: 1px solid rgba(248, 245, 236, 0.08);
+  border-radius: 50%;
+  border-style: dashed;
+}
+
+.rotate-1 {
+  width: 120px;
+  height: 120px;
+  top: 20%;
+  left: 30%;
+  animation: slow-rotate 20s linear infinite;
+}
+
+.rotate-2 {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  left: 70%;
+  animation: reverse-rotate 15s linear infinite;
+}
+
+.rotate-3 {
+  width: 150px;
+  height: 150px;
+  top: 75%;
+  left: 10%;
+  animation: slow-rotate 25s linear infinite;
+}
+
+/* Particle system */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.1;
+  }
+  25% {
+    transform: translateY(-30px) translateX(10px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-60px) translateX(-5px);
+    opacity: 0.1;
+  }
+  75% {
+    transform: translateY(-30px) translateX(-10px);
+    opacity: 0.25;
+  }
+}
+
+.particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(248, 245, 236, 0.2);
+  border-radius: 50%;
+  animation: particle-float 8s ease-in-out infinite;
+}
+
+.particle-1 {
+  top: 30%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  top: 50%;
+  left: 80%;
+  animation-delay: 1s;
+}
+
+.particle-3 {
+  top: 70%;
+  left: 30%;
+  animation-delay: 2s;
+}
+
+.particle-4 {
+  top: 40%;
+  left: 60%;
+  animation-delay: 3s;
+}
+
+.particle-5 {
+  top: 80%;
+  left: 50%;
+  animation-delay: 4s;
+}
+
+.particle-6 {
+  top: 20%;
+  left: 75%;
+  animation-delay: 5s;
+}
