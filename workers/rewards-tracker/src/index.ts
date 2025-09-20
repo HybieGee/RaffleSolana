@@ -18,6 +18,7 @@ export interface Env {
   ALLOWED_WEBHOOK_KEY: string;
   RAFFLE_WORKER_URL: string;
   RAFFLE_API_KEY: string;
+  ADMIN_TOKEN: string;
 }
 
 export default {

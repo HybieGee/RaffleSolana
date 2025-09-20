@@ -49,7 +49,7 @@ export async function handleTriggerRaffle(env: Env): Promise<Response> {
       const raffleResponse = await fetch(`${raffleWorkerUrl}/admin/force-draw`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${env.RAFFLE_API_KEY || 'default-key'}`,
+          'Authorization': `Bearer ${env.RAFFLE_API_KEY || env.ADMIN_TOKEN || 'default-key'}`,
           'Content-Type': 'application/json'
         }
       });
