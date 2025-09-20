@@ -12,6 +12,7 @@ export interface Env {
   MAX_WEIGHT_RATIO: string
   MIN_BALANCE_FOR_ELIGIBILITY: string
   ADMIN_TOKEN?: string
+  REWARDS_WORKER_URL?: string
 }
 
 export interface Holder {
