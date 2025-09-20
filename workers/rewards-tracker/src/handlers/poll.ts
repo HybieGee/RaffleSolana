@@ -20,15 +20,16 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
     const lastChecked = await env.KV_SUMMARY.get('last_checked_signature');
     console.log('Last checked signature:', lastChecked);
 
-    // Use Alchemy endpoint - monitor the Pump.fun fee source wallet for outgoing transactions
+    // Use Alchemy endpoint - monitor YOUR wallet for incoming fee claims
     const alchemyKey = env.ALCHEMY_API_KEY || 'SYEG70FAIl_t9bDEkh4ki';
     const rpcUrl = `https://solana-mainnet.g.alchemy.com/v2/${alchemyKey}`;
-    const sourceWallet = env.PUMP_FEE_SOURCE_WALLET || 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
+    // Monitor YOUR wallet directly for incoming transactions
+    const yourWallet = env.CREATOR_WALLET || '8NwUT5jyjPdWcjjWrqTQNwuGiRZMrS6o3pwYTE3Kjwfi';
 
     console.log(`Using Alchemy key: ${alchemyKey ? 'Yes' : 'No (fallback)'}`);
-    console.log(`Monitoring wallet: ${sourceWallet}`);
+    console.log(`Monitoring YOUR wallet: ${yourWallet}`);
 
-    const transactions = await fetchRecentTransactions(sourceWallet, rpcUrl, lastChecked);
+    const transactions = await fetchRecentTransactions(yourWallet, rpcUrl, lastChecked);
 
     let newClaims = 0;
     let checkedCount = 0;
@@ -188,6 +189,7 @@ async function fetchTransaction(
       signature,
       {
         encoding: "jsonParsed",
+        commitment: "confirmed",
         maxSupportedTransactionVersion: 0
       }
     ]

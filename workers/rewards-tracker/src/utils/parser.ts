@@ -18,41 +18,83 @@ export async function parsePumpClaim(
   env: Env
 ): Promise<ClaimData | null> {
   try {
-    // Check if this is a transaction FROM the source wallet TO the creator wallet
-    const logs = txData.meta?.logMessages || [];
-    const hasCollectCreatorFee = logs.some((log: string) =>
-      log.includes('Program log: Instruction: CollectCreatorFee')
+    // Simple approach: Check if this transaction increases the creator wallet balance
+    // and involves the Pump.fun program
+    const pumpProgramId = env.PUMP_PROGRAM_ID || '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P';
+
+    // Get account keys - handle both parsed and non-parsed formats
+    let accountKeys: string[] = [];
+    let creatorWalletIndex = -1;
+
+    // Handle parsed format
+    if (txData.transaction?.message?.accountKeys) {
+      if (Array.isArray(txData.transaction.message.accountKeys)) {
+        accountKeys = txData.transaction.message.accountKeys;
+      } else if (txData.transaction.message.accountKeys.length !== undefined) {
+        // Convert account keys object to array
+        accountKeys = txData.transaction.message.accountKeys.map((key: any) =>
+          typeof key === 'string' ? key : key.pubkey
+        );
+      }
+    }
+
+    // Find creator wallet index
+    creatorWalletIndex = accountKeys.findIndex(key =>
+      key === env.CREATOR_WALLET || (key as any)?.pubkey === env.CREATOR_WALLET
     );
 
-    if (!hasCollectCreatorFee) {
-      return null;
-    }
+    // Check if creator wallet balance increased (most reliable method)
+    if (creatorWalletIndex >= 0) {
+      const preBalance = txData.meta?.preBalances?.[creatorWalletIndex] || 0;
+      const postBalance = txData.meta?.postBalances?.[creatorWalletIndex] || 0;
+      const balanceChange = postBalance - preBalance;
 
-    // Look for the SOL transfer in inner instructions
-    const innerInstructions = txData.meta?.innerInstructions || [];
-    let transferAmount = 0;
-    let isValidTransfer = false;
+      // Check if Pump.fun is involved
+      const hasPumpProgram = accountKeys.some(key =>
+        key === pumpProgramId || (key as any)?.pubkey === pumpProgramId
+      );
 
-    for (const inner of innerInstructions) {
-      for (const instruction of inner.instructions) {
-        if (instruction.parsed?.type === 'transfer') {
-          const transfer = instruction.parsed.info;
-          const sourceWallet = env.PUMP_FEE_SOURCE_WALLET || 'GxXdDDuP52RrbN9dXqqiPA8npxH48thqMwij4YBrkwPU';
+      // If balance increased and Pump.fun is involved, it's a claim
+      if (balanceChange > 0 && hasPumpProgram) {
+        const signature = txData.signature || txData.transaction?.signatures?.[0];
+        const blockTime = txData.blockTime || Math.floor(Date.now() / 1000);
+        const amountSol = balanceChange / 1e9;
 
-          // Check if transfer is from source wallet to creator wallet
-          if (transfer.source === sourceWallet && transfer.destination === env.CREATOR_WALLET) {
-            transferAmount = transfer.lamports;
-            isValidTransfer = true;
-            break;
-          }
-        }
+        console.log(`✅ Found Pump.fun claim: ${signature} - ${amountSol} SOL`);
+
+        return {
+          signature,
+          time: blockTime,
+          amountSol,
+          wallet: env.CREATOR_WALLET
+        };
       }
-      if (isValidTransfer) break;
     }
 
-    if (!isValidTransfer || transferAmount <= 0) {
-      return null;
+    // Fallback: Look for any SOL increase to creator wallet in this transaction
+    if (creatorWalletIndex >= 0) {
+      const preBalance = txData.meta?.preBalances?.[creatorWalletIndex] || 0;
+      const postBalance = txData.meta?.postBalances?.[creatorWalletIndex] || 0;
+      const balanceChange = postBalance - preBalance;
+
+      // If significant balance increase (more than 0.0001 SOL), consider it a potential claim
+      if (balanceChange > 100000) { // 0.0001 SOL in lamports
+        const signature = txData.signature || txData.transaction?.signatures?.[0];
+        const blockTime = txData.blockTime || Math.floor(Date.now() / 1000);
+        const amountSol = balanceChange / 1e9;
+
+        console.log(`✅ Found potential claim (balance increase): ${signature} - ${amountSol} SOL`);
+
+        return {
+          signature,
+          time: blockTime,
+          amountSol,
+          wallet: env.CREATOR_WALLET
+        };
+      }
     }
+
+    return null;
 
     // Extract transaction details
     const signature = txData.transaction?.signatures?.[0] || txData.signature;

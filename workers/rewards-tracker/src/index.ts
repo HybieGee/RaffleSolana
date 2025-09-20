@@ -68,6 +68,13 @@ export default {
         case path === '/internal/trigger-raffle' && request.method === 'POST':
           return await handleTriggerRaffle(env);
 
+        case path === '/internal/reset-last-checked' && request.method === 'POST':
+          // Reset the last checked signature to reprocess transactions
+          await env.KV_SUMMARY.delete('last_checked_signature');
+          return new Response(JSON.stringify({ success: true, message: 'Last checked signature reset' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+
         default:
           return new Response('Not Found', { status: 404, headers: corsHeaders });
       }
