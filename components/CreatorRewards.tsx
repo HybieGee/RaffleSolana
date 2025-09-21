@@ -43,7 +43,7 @@ export default function CreatorRewards() {
       setError(null)
       console.log('Fetching claims from:', `${WORKER_URL}/api/creator-claims?limit=10`)
 
-      // Fetch claims
+      // Fetch claims - v2 interface
       const claimsRes = await fetch(`${WORKER_URL}/api/creator-claims?limit=10`, {
         mode: 'cors',
         headers: {
