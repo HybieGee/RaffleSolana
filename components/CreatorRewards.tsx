@@ -117,7 +117,7 @@ export default function CreatorRewards() {
             >
               <div className="text-xs opacity-75">Last 7 Days</div>
               <div className="text-lg font-bold">
-                {summaryRange === '7d' && summary ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
+                {summary && summary.allTime && typeof summary.allTime.amountSol === 'number' ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
               </div>
             </button>
 
@@ -129,7 +129,7 @@ export default function CreatorRewards() {
             >
               <div className="text-xs opacity-75">Last 30 Days</div>
               <div className="text-lg font-bold">
-                {summaryRange === '30d' && summary ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
+                {summary && summary.allTime && typeof summary.allTime.amountSol === 'number' ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
               </div>
             </button>
 
@@ -141,7 +141,7 @@ export default function CreatorRewards() {
             >
               <div className="text-xs opacity-75">All Time</div>
               <div className="text-lg font-bold">
-                {summaryRange === 'all' && summary ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
+                {summary && summary.allTime && typeof summary.allTime.amountSol === 'number' ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
               </div>
             </button>
           </div>
@@ -149,7 +149,7 @@ export default function CreatorRewards() {
           {/* Claims count */}
           {summary && (
             <div className="text-center mb-3 text-charcoal/60 text-xs">
-              {summary.allTime.count} claims tracked
+              {summary && summary.allTime && typeof summary.allTime.count === 'number' ? summary.allTime.count : 0} claims tracked
             </div>
           )}
 
