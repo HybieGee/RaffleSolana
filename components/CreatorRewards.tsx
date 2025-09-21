@@ -3,17 +3,24 @@
 import { useState, useEffect } from 'react'
 
 interface Claim {
-  signature: string
-  time: number
+  sig: string
+  ts: number
   amountSol: number
-  wallet: string
+  labels: string[]
+  coinMint: string | null
+  source: string
 }
 
 interface ClaimSummary {
-  totalSol: number
-  count: number
-  from: number
-  to: number
+  allTime: {
+    amountSol: number
+    count: number
+  }
+  byDay: Array<{
+    date: string
+    amount_sol: number
+    count: number
+  }>
 }
 
 export default function CreatorRewards() {
@@ -51,7 +58,7 @@ export default function CreatorRewards() {
       setClaims(claimsData)
 
       // Fetch summary
-      const summaryRes = await fetch(`${WORKER_URL}/api/creator-claims/summary?range=${summaryRange}`, {
+      const summaryRes = await fetch(`${WORKER_URL}/api/creator-claims/summary`, {
         mode: 'cors',
         headers: {
           'Accept': 'application/json',
@@ -110,7 +117,7 @@ export default function CreatorRewards() {
             >
               <div className="text-xs opacity-75">Last 7 Days</div>
               <div className="text-lg font-bold">
-                {summaryRange === '7d' && summary ? summary.totalSol.toFixed(3) : '---'} SOL
+                {summaryRange === '7d' && summary ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
               </div>
             </button>
 
@@ -122,7 +129,7 @@ export default function CreatorRewards() {
             >
               <div className="text-xs opacity-75">Last 30 Days</div>
               <div className="text-lg font-bold">
-                {summaryRange === '30d' && summary ? summary.totalSol.toFixed(3) : '---'} SOL
+                {summaryRange === '30d' && summary ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
               </div>
             </button>
 
@@ -134,7 +141,7 @@ export default function CreatorRewards() {
             >
               <div className="text-xs opacity-75">All Time</div>
               <div className="text-lg font-bold">
-                {summaryRange === 'all' && summary ? summary.totalSol.toFixed(3) : '---'} SOL
+                {summaryRange === 'all' && summary ? summary.allTime.amountSol.toFixed(3) : '---'} SOL
               </div>
             </button>
           </div>
@@ -142,7 +149,7 @@ export default function CreatorRewards() {
           {/* Claims count */}
           {summary && (
             <div className="text-center mb-3 text-charcoal/60 text-xs">
-              {summary.count} claims tracked
+              {summary.allTime.count} claims tracked
             </div>
           )}
 
@@ -155,20 +162,20 @@ export default function CreatorRewards() {
               <div className="space-y-1">
                 {claims.map((claim) => (
                   <div
-                    key={claim.signature}
+                    key={claim.sig}
                     className="flex justify-between items-center p-2 bg-charcoal/5 rounded-lg hover:bg-charcoal/10 transition-colors"
                   >
                     <div className="flex-1">
                       <div className="text-xs text-charcoal">
-                        {formatTime(claim.time)}
+                        {formatTime(claim.ts)}
                       </div>
                       <a
-                        href={`https://solscan.io/tx/${claim.signature}`}
+                        href={`https://solscan.io/tx/${claim.sig}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-blue-600 hover:underline block mt-1"
                       >
-                        {formatSignature(claim.signature)}
+                        {formatSignature(claim.sig)}
                       </a>
                     </div>
                     <div className="text-right">
