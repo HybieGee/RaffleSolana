@@ -251,7 +251,7 @@ export async function fetchHeliusHistory(
     throw new Error(`Helius API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   return {
     transactions: data.transactions || [],
     nextCursor: data.nextCursor

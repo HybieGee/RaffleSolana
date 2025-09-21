@@ -198,7 +198,7 @@ async function fetchAlchemySignatures(
     throw new Error(`Alchemy RPC error: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   if (data.error) {
     throw new Error(`Alchemy RPC error: ${data.error.message}`);
   }
@@ -237,7 +237,7 @@ async function fetchAlchemyTransaction(rpcUrl: string, signature: string): Promi
     throw new Error(`Failed to fetch transaction: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = await response.json() as any;
   if (data.error) {
     throw new Error(`RPC error: ${data.error.message}`);
   }

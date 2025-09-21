@@ -68,15 +68,18 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
 
       if (balanceChange > 0) {
         const claim = {
-          signature: tx.signature,
-          time: tx.blockTime || Math.floor(Date.now() / 1000),
-          amountSol: balanceChange / 1e9,
-          wallet: env.CREATOR_WALLET
+          sig: tx.signature,
+          ts: tx.blockTime || Math.floor(Date.now() / 1000),
+          amount_lamports: balanceChange,
+          amount_sol: balanceChange / 1e9,
+          labels: ['alchemy_poll'],
+          coin_mint: null,
+          source: 'alchemy' as const
         };
 
-        await storeClaim(env.D1_CLAIMS, claim);
+        await upsertClaim(env.D1_CLAIMS, claim);
         newClaims++;
-        console.log(`✅ Found new claim: ${claim.signature} - ${claim.amountSol} SOL`);
+        console.log(`✅ Found new claim: ${claim.sig} - ${claim.amount_sol} SOL`);
 
         // Invalidate cache
         await Promise.all(['7d', '30d', 'all'].map(key =>
@@ -85,7 +88,7 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
 
         // Auto-trigger raffle for new claims
         try {
-          console.log(`🎰 Triggering raffle for new claim: ${claim.signature}`);
+          console.log(`🎰 Triggering raffle for new claim: ${claim.sig}`);
 
           // Use service binding for direct worker-to-worker communication
           const raffleResponse = await env.RAFFLE_SERVICE.fetch('https://raffle-worker/admin/force-draw', {
@@ -97,7 +100,7 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
           });
 
           if (raffleResponse.ok) {
-            console.log(`✅ Raffle triggered successfully for claim: ${claim.signature}`);
+            console.log(`✅ Raffle triggered successfully for claim: ${claim.sig}`);
           } else {
             console.error(`❌ Failed to trigger raffle: ${raffleResponse.status} ${raffleResponse.statusText}`);
           }
