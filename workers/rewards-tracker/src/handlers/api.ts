@@ -1,22 +1,31 @@
 import { Env } from '../index';
-import { getClaims, getClaimsSummary } from '../utils/storage';
+import { getRecentClaims, getAllTimeTotals, getDailyTotals } from '../lib/d1';
 
 export async function handleGetClaims(
   request: Request,
   env: Env
 ): Promise<Response> {
   const url = new URL(request.url);
-  const limit = parseInt(url.searchParams.get('limit') || '100');
-  const before = url.searchParams.get('before') || undefined;
+  const limit = parseInt(url.searchParams.get('limit') || '50');
 
   try {
-    const claims = await getClaims(env.D1_CLAIMS, limit, before);
+    const claims = await getRecentClaims(env.D1_CLAIMS, limit);
 
-    return new Response(JSON.stringify(claims), {
+    // Transform for API response
+    const response = claims.map(claim => ({
+      sig: claim.sig,
+      ts: claim.ts,
+      amountSol: claim.amount_sol,
+      labels: claim.labels,
+      coinMint: claim.coin_mint,
+      source: claim.source
+    }));
+
+    return new Response(JSON.stringify(response), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=60'
+        'Cache-Control': 'public, max-age=30'
       }
     });
   } catch (error) {
@@ -38,17 +47,26 @@ export async function handleGetSummary(
   request: Request,
   env: Env
 ): Promise<Response> {
-  const url = new URL(request.url);
-  const range = url.searchParams.get('range') as '7d' | '30d' | 'all' || 'all';
-
   try {
-    const summary = await getClaimsSummary(env.D1_CLAIMS, env.KV_SUMMARY, range);
+    // Get all-time totals
+    const allTimeTotals = await getAllTimeTotals(env.D1_CLAIMS);
 
-    return new Response(JSON.stringify(summary), {
+    // Get daily totals for last 60 days
+    const dailyTotals = await getDailyTotals(env.D1_CLAIMS, 60, env.TZ || 'Australia/Brisbane');
+
+    const response = {
+      allTime: {
+        amountSol: allTimeTotals.amount_sol,
+        count: allTimeTotals.count
+      },
+      byDay: dailyTotals
+    };
+
+    return new Response(JSON.stringify(response), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=60'
+        'Cache-Control': 'public, max-age=300'
       }
     });
   } catch (error) {

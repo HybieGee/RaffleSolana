@@ -1,6 +1,6 @@
 import { Env } from '../index';
-import { parsePumpClaim } from '../utils/parser';
-import { storeClaim } from '../utils/storage';
+import { hasCreatorFeeInstruction, calculateBalanceChange, extractCoinMint } from '../lib/pumpfun';
+import { upsertClaim } from '../lib/d1';
 
 // Use Alchemy RPC with API key
 function getAlchemyRpcUrl(apiKey: string): string {
@@ -47,10 +47,24 @@ export async function handlePollForClaims(env: Env): Promise<Response> {
         continue;
       }
 
+      // Find the creator wallet index in the transaction
+      const accountKeys = tx.transaction?.message?.accountKeys || [];
+      const creatorIndex = accountKeys.findIndex((key: any) => {
+        const address = typeof key === 'string' ? key : key.pubkey;
+        return address === env.CREATOR_WALLET;
+      });
+
+      if (creatorIndex === -1) {
+        console.log(`Creator wallet not found in transaction ${tx.signature}`);
+        continue;
+      }
+
       // Check if this transaction shows an incoming SOL transfer to creator wallet
-      const preBalance = tx.meta?.preBalances?.[0] || 0;
-      const postBalance = tx.meta?.postBalances?.[0] || 0;
+      const preBalance = tx.meta?.preBalances?.[creatorIndex] || 0;
+      const postBalance = tx.meta?.postBalances?.[creatorIndex] || 0;
       const balanceChange = postBalance - preBalance;
+
+      console.log(`Transaction ${tx.signature}: Creator wallet at index ${creatorIndex}, balance change: ${balanceChange / 1e9} SOL`);
 
       if (balanceChange > 0) {
         const claim = {
@@ -149,7 +163,7 @@ async function fetchRecentTransactions(
     params: [
       wallet,
       {
-        limit: 10,
+        limit: 50,
         ...(before && { before: before })
       }
     ]

@@ -34,6 +34,7 @@ export default function CreatorRewards() {
   const fetchData = async () => {
     try {
       setError(null)
+      console.log('Fetching claims from:', `${WORKER_URL}/api/creator-claims?limit=10`)
 
       // Fetch claims
       const claimsRes = await fetch(`${WORKER_URL}/api/creator-claims?limit=10`, {
@@ -46,6 +47,7 @@ export default function CreatorRewards() {
         throw new Error(`Claims API error: ${claimsRes.status} ${claimsRes.statusText}`)
       }
       const claimsData = await claimsRes.json() as Claim[]
+      console.log('Received claims:', claimsData.length, 'items')
       setClaims(claimsData)
 
       // Fetch summary
@@ -59,6 +61,7 @@ export default function CreatorRewards() {
         throw new Error(`Summary API error: ${summaryRes.status} ${summaryRes.statusText}`)
       }
       const summaryData = await summaryRes.json() as ClaimSummary
+      console.log('Received summary:', summaryData)
       setSummary(summaryData)
 
       setLoading(false)

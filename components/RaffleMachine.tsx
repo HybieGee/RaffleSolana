@@ -7,17 +7,21 @@ interface RaffleMachineProps {
 export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [loopCount, setLoopCount] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
 
   useEffect(() => {
     if (isDrawing && videoRef.current) {
       // Reset and play the animation when drawing starts
       setLoopCount(0)
+      setHasStarted(true)
       videoRef.current.currentTime = 0
       videoRef.current.play()
     } else if (!isDrawing && videoRef.current) {
-      // Pause at first frame when not drawing
+      // Reset state when not drawing
       videoRef.current.pause()
       videoRef.current.currentTime = 0
+      setLoopCount(0)
+      setHasStarted(false)
     }
   }, [isDrawing])
 
@@ -26,6 +30,9 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
       // Play 3 times total (0, 1, 2)
       setLoopCount(prev => prev + 1)
       videoRef.current.play()
+    } else {
+      // Drawing complete
+      setHasStarted(false)
     }
   }
 
@@ -48,7 +55,7 @@ export default function RaffleMachine({ isDrawing }: RaffleMachineProps) {
         </video>
       </div>
 
-      {isDrawing && (
+      {isDrawing && hasStarted && (
         <div className="text-center mt-2">
           <p className="text-charcoal font-semibold text-lg animate-pulse">
             🎲 Selecting winner {loopCount + 1} of 3...

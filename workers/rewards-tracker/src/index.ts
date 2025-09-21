@@ -5,6 +5,8 @@ import { handleUsageStats } from './handlers/usage';
 import { handleDebugInfo } from './handlers/debug';
 import { handlePollForClaims } from './handlers/poll';
 import { handleTriggerRaffle } from './handlers/raffle-trigger';
+import { handleHeliusWebhook } from './handlers/helius-webhook';
+import { handleBackfill } from './handlers/backfill';
 
 export interface Env {
   D1_CLAIMS: D1Database;
@@ -15,10 +17,14 @@ export interface Env {
   PUMP_PROGRAM_ID: string;
   HELIUS_API_KEY: string;
   ALCHEMY_API_KEY: string;
+  ALCHEMY_RPC_URL: string;
+  WEBHOOK_SECRET: string;
+  BACKFILL_TOKEN: string;
   ALLOWED_WEBHOOK_KEY: string;
   RAFFLE_WORKER_URL: string;
   RAFFLE_API_KEY: string;
   ADMIN_TOKEN: string;
+  TZ?: string;
 }
 
 export default {
@@ -107,6 +113,25 @@ export default {
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
           }
+
+        case path === '/internal/reset-scan' && request.method === 'POST':
+          // Reset the last checked signature to force re-scan
+          await env.KV_SUMMARY.delete('last_checked_signature');
+          return new Response(JSON.stringify({ success: true, message: 'Scan reset, will re-check all recent transactions' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+
+        case path === '/api/webhooks/helius' && request.method === 'POST':
+          return await handleHeliusWebhook(request, env);
+
+        case path.startsWith('/api/claims/backfill') && request.method === 'GET':
+          return await handleBackfill(request, env);
+
+        case path === '/api/claims/recent' && request.method === 'GET':
+          return await handleGetClaims(request, env);
+
+        case path === '/api/claims/totals' && request.method === 'GET':
+          return await handleGetSummary(request, env);
 
         default:
           return new Response('Not Found', { status: 404, headers: corsHeaders });
